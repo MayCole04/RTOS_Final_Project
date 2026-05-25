@@ -1,0 +1,8 @@
+{
+    "idf.pythonInstallPath": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+    "files.associations": {
+        "esp_bt.h": "c",
+        "io_mux_reg.h": "c"
+    },
+    "cmake.ignoreCMakeListsMissing": true
+}

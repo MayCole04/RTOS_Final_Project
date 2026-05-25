@@ -48,7 +48,7 @@ extern "C" {
     xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, NULL, 0 );
     xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 4, NULL, 1 );
     xTaskCreatePinnedToCore(LED_task,"LED", 1000, NULL, 2, NULL, 0);
-    //xTaskCreatePinnedToCore(builtInLED_task,"builtInLED", 1000, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(builtInLED_task,"builtInLED", 1000, NULL, 2, NULL, 1);
     
     
   }

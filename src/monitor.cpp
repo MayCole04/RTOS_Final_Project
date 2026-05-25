@@ -48,9 +48,9 @@ void beatMonitor_task(void * pvParameters )
 
 
 void calculateBPM_task(void * pvParameters){
-
+int x;
 }
 
 void colorChange_task(void * pvParameters){
-    
+int x;
 }

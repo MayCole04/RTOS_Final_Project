@@ -6,6 +6,7 @@
 #include <freertos/queue.h>
 
 #define threshhold_voltage 1
+#define measure_time 15
 bool IRAM_ATTR heartbeat_timer_callback(void *args);
 void signalInput_task(void * pvParameters);
 void beatMonitor_task(void * pvParameters );

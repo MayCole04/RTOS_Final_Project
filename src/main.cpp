@@ -4,12 +4,6 @@
 
 
 //#include <esp32-hal-gpio.h>
-
-
-
-
-
-
 //TickType_t msToTick(const int ms);
 TickType_t msToTick(const int ms){
   return ms / portTICK_PERIOD_MS;
@@ -50,9 +44,13 @@ extern "C" {
     configPins();
     configTimer();
     timer_start(TIMER_GROUP_0, TIMER_0);
-    xTaskCreatePinnedToCore(LED_task,"LED", 1000, NULL, 2, NULL, 1);
-    xTaskCreatePinnedToCore(builtInLED_task,"builtInLED", 1000, NULL, 2, NULL, 1);
-    xTaskCreatePinnedToCore(timeMonitor_task, "monitor", 2000, NULL, 2, NULL, 0 );
+    xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, NULL, 1 );
+    xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, NULL, 0 );
+    xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 4, NULL, 1 );
+    xTaskCreatePinnedToCore(LED_task,"LED", 1000, NULL, 2, NULL, 0);
+    //xTaskCreatePinnedToCore(builtInLED_task,"builtInLED", 1000, NULL, 2, NULL, 1);
+    
+    
   }
   }
 

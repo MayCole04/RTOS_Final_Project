@@ -3,24 +3,6 @@
 
 
 
-/*
-void signalInput_task(void * pvParameters )
-{   
-    
-    float voltage; 
-    vTaskDelay(pdMS_TO_TICKS(500));
-    for(;;){
-        voltage = adc1_get_raw(signalInput_channel) * 2.45 / 4095;
-        printf("%f\n", voltage);
-        if (voltage > threshhold_voltage){
-
-            printf("Heartbeat Successfully Read\n");   
-        }
-        vTaskDelay(pdMS_TO_TICKS(1000));
-     
-    }
-}   */
-
  bool IRAM_ATTR heartbeat_timer_callback(void *args) {
     BaseType_t high_task_awoken = pdFALSE;
     uint16_t adc_raw = adc1_get_raw(signalInput_channel);
@@ -28,12 +10,11 @@ void signalInput_task(void * pvParameters )
             xQueueSendFromISR(sample_queue, &adc_raw, &high_task_awoken);
         else {
             printf("Error: Queue handle is NULL!\n");
-        }
-    
+        }    
     return high_task_awoken == pdTRUE; 
 }
 
-void timeMonitor_task(void * pvParameters )
+void beatMonitor_task(void * pvParameters )
 {
     uint16_t beat_miss_count = 0;
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -63,4 +44,13 @@ void timeMonitor_task(void * pvParameters )
             printf("Error: beat_miss_count overflow\n");
         }
     }
+}
+
+
+void calculateBPM_task(void * pvParameters){
+
+}
+
+void colorChange_task(void * pvParameters){
+    
 }

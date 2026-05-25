@@ -8,5 +8,7 @@
 #define threshhold_voltage 1
 bool IRAM_ATTR heartbeat_timer_callback(void *args);
 void signalInput_task(void * pvParameters);
-void timeMonitor_task(void * pvParameters );
+void beatMonitor_task(void * pvParameters );
+void colorChange_task(void * pvParameters);
+void calculateBPM_task(void * pvParameters);
 #endif

@@ -47,14 +47,19 @@ void beatMonitor_task(void * pvParameters )
         }
     }
 }
-
+ QueueHandle_t         bpm_queue;
 
 void calculateBPM_task(void * pvParameters){
+    bpm_queue = xQueueCreate(queue_size, sizeof(uint8_t)); 
+    while(bpm_queue == NULL)
+      printf("sample queue is NULL\n");
+    uint8_t bpm =0;
     for (;;){
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
    
     
     ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(2));
+    xQueueSend(bpm_queue,&bpm, portMAX_DELAY);
     }
 }
 

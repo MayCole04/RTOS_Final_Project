@@ -7,16 +7,6 @@
 
 
 
-void builtInLED_task(void * pvParameters){
-  for( ;;){
-    gpio_set_direction(yellowLED_GPIO, GPIO_MODE_OUTPUT);
-    gpio_set_level(yellowLED_GPIO, 0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio_set_level(yellowLED_GPIO, 1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-
-}
 
 extern "C" {
   void app_main(void){
@@ -33,7 +23,6 @@ extern "C" {
     xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, NULL, 0 );
     xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 4, NULL, 1 );
     xTaskCreatePinnedToCore(LED_task,"LED", 1000, NULL, 2, &LED_TaskHandle, 0);
-    xTaskCreatePinnedToCore(builtInLED_task,"builtInLED", 1000, NULL, 2, NULL, 1);
     
     
   }

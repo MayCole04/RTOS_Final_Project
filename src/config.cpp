@@ -18,7 +18,7 @@ Function to configure GPIO ports and the ADC
   gpio_pad_select_gpio(yellowLED_pin);  
   gpio_set_direction(yellowLED_GPIO, GPIO_MODE_OUTPUT);
   gpio_output_enable(yellowLED_GPIO);
-    gpio_set_level(yellowLED_GPIO, 0);    
+  gpio_set_level(yellowLED_GPIO, 0);    
   //built in LED
   gpio_pad_select_gpio(bulitInLED_pin); 
   gpio_set_direction(bulitInLED_GPIO, GPIO_MODE_OUTPUT);
@@ -45,7 +45,7 @@ trigger an interupt at the time specified at the top of the file
   };
 
   timer_init(TIMER_GROUP_0, TIMER_0, &interrupt_timer_config );
-  timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, sample_ticks);
+  timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, sample_ticks);      //defined in config.h, sample ticks defines how often we run the ISR
   timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
   timer_isr_callback_add(TIMER_GROUP_0, TIMER_0, heartbeat_timer_callback, NULL, 0);
   

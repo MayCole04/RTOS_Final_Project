@@ -34,7 +34,7 @@ Function to configure and enable the timer. Also enables the timer to
 trigger an interupt at the time specified at the top of the file
 */
 {
-  const timer_config_t heartbeat_timer_config = 
+  const timer_config_t interrupt_timer_config = 
   {
     .alarm_en = TIMER_ALARM_EN,
     .counter_en = TIMER_PAUSE, 
@@ -44,7 +44,7 @@ trigger an interupt at the time specified at the top of the file
     
   };
 
-  timer_init(TIMER_GROUP_0, TIMER_0, &heartbeat_timer_config );
+  timer_init(TIMER_GROUP_0, TIMER_0, &interrupt_timer_config );
   timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, sample_ticks);
   timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
   timer_isr_callback_add(TIMER_GROUP_0, TIMER_0, heartbeat_timer_callback, NULL, 0);

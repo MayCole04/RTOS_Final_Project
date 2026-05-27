@@ -34,6 +34,9 @@
 #define sample_ticks         APB_CLK_FREQ/sample_frequency/hw_divider
 #define queue_size           10
 
+//timer 2
+#define timer2_divider 12000  // for 15 seconds, timer value should equal 100000
+
 
 #define bulitInLED_GPIO      GPIO_NUM_2
 #define yellowLED_GPIO       GPIO_NUM_23

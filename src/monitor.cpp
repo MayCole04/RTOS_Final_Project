@@ -2,7 +2,7 @@
 #include <freertos/queue.h>
 
 
-
+TaskHandle_t calculateBPM_TaskHandle = NULL;
  bool IRAM_ATTR heartbeat_timer_callback(void *args) {
     BaseType_t high_task_awoken = pdFALSE;
     uint16_t adc_raw = adc1_get_raw(signalInput_channel);
@@ -28,10 +28,12 @@ void beatMonitor_task(void * pvParameters )
         
         float voltage = current_adc * 2.45 / 4095;
 
-        if(voltage < 1)
+        if(voltage < threshhold_voltage)
             beat_miss_count++;
         else
         {
+            xTaskNotify(LED_TaskHandle, 1, eNoAction);
+            xTaskNotifyGive(calculateBPM_TaskHandle);
             beat_miss_count = 0;
             printf("Heartbeat Successfully Read. sample:%d voltage: %f\n", beat_miss_count+1, voltage);   
         }
@@ -48,7 +50,12 @@ void beatMonitor_task(void * pvParameters )
 
 
 void calculateBPM_task(void * pvParameters){
-int x;
+    for (;;){
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+   
+    
+    ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(2));
+    }
 }
 
 void colorChange_task(void * pvParameters){

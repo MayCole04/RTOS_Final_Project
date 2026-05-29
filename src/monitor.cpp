@@ -66,5 +66,20 @@ void calculateBPM_task(void * pvParameters){
 }
 
 void colorChange_task(void * pvParameters){
-int x;
+    uint8_t bpm;
+    enum color{
+        red,
+        green
+    };
+    for(;;){
+        xQueueReceive(bpm_queue, &bpm, portMAX_DELAY);
+        enum color setColor;
+        if((bpm <= base_highBPM) && (bpm >= base_lowBPM))
+             setColor = green;
+        else
+             setColor = red; 
+
+        xTaskNotify(LED_TaskHandle, (setColor << 1),eSetBits); //Send Color bit to bit 2 of LED tasks, notification value
+    }
+    
 }

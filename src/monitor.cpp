@@ -27,11 +27,9 @@ void beatMonitor_task(void * pvParameters )
             printf("Error: Queue handle is NULL!\n");
         
         float voltage = current_adc * 2.45 / 4095;
-
         if(voltage < threshhold_voltage)
             beat_miss_count++;
-        else
-        {
+        else{
             xTaskNotify(LED_TaskHandle, 1, eNoAction);
             xTaskNotifyGive(calculateBPM_TaskHandle);
             beat_miss_count = 0;
@@ -64,5 +62,20 @@ void calculateBPM_task(void * pvParameters){
 }
 
 void colorChange_task(void * pvParameters){
-int x;
+    uint8_t bpm;
+    enum color{
+        red,
+        green
+    };
+    for(;;){
+        xQueueReceive(bpm_queue, &bpm, portMAX_DELAY);
+        enum color setColor;
+        if((bpm <= base_highBPM) && (bpm >= base_lowBPM))
+             setColor = green;
+        else
+             setColor = red; 
+
+        xTaskNotify(LED_TaskHandle, (setColor << 1),eSetBits); //Send Color bit to bit 2 of LED tasks, notification value
+    }
+    
 }

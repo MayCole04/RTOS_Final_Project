@@ -26,7 +26,9 @@
 #define OUTPUT               0x02
 //pins
 #define redLED_pin           2
-#define greenLED_pin         23
+#define greenLED_pin         5
+#define yellowLED_pin        21
+#define userInput_pin        27
 #define signalInput_pin      36
 //timer
 #define hw_divider           2
@@ -34,14 +36,14 @@
 #define sample_ticks         APB_CLK_FREQ/sample_frequency/hw_divider
 #define queue_size           10
 
-//timer 2
-#define timer2_divider 12000  // for 15 seconds, timer value should equal 100000
 
+#define redLED_GPIO         GPIO_NUM_2
+#define greenLED_GPIO       GPIO_NUM_5
+#define yellowLED_GPIO      GPIO_NUM_21
+#define userInput_GPIO      GPIO_NUM_27
+#define signalInput_GPIO    GPIO_NUM_36
+#define signalInput_channel ADC1_CHANNEL_0
 
-#define redLED_GPIO      GPIO_NUM_2
-#define greenLED_GPIO       GPIO_NUM_23
-#define signalInput_GPIO     GPIO_NUM_36
-#define signalInput_channel  ADC1_CHANNEL_0
 
 extern QueueHandle_t         sample_queue;
 extern bool IRAM_ATTR        heartbeat_timer_callback(void *args);

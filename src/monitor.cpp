@@ -5,6 +5,7 @@
 /*
 ; this ISR collects the raw ADC value periodically set by frequency that is user defined in config.h
 */
+TaskHandle_t    beatMonitor_TaskHandle = NULL;
 TaskHandle_t    calculateBPM_TaskHandle = NULL;
 QueueHandle_t   bpm_queue;
  bool IRAM_ATTR heartbeat_timer_callback(void *args) {
@@ -24,6 +25,7 @@ void beatMonitor_task(void * pvParameters )
     vTaskDelay(pdMS_TO_TICKS(500));         //freeRTOS recognizes ticks, not ms, so this converts it
     for(;;)
     {
+        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
         uint16_t current_adc = 0;           //stores the current ADC reading, cant determine voltage reading from this
         if (sample_queue != NULL) 
             xQueueReceive(sample_queue, &current_adc, portMAX_DELAY);       //wait forever, until we get the raw ADC value
@@ -62,10 +64,14 @@ void calculateBPM_task(void * pvParameters){
        case 1:{  //Measuring State
             vTaskDelay(pdMS_TO_TICKS(measure_time*1000));          //Count for 15 seconds
             notification = ulTaskNotifyTake(pdTRUE, 0);
+            timer_pause(TIMER_GROUP_0, TIMER_0);
+            timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
+
             bpm_queue = xQueueCreate(queue_size, sizeof(uint8_t));
             while(bpm_queue == NULL)
-                printf("sample queue is NULL\n");
+                printf("bpm queue is NULL\n");
             bpm = (notification & 0x000000FF);
+            xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 4, NULL, 0 );
             xQueueSend(bpm_queue,&bpm, portMAX_DELAY);  
             break;
        } 
@@ -95,8 +101,8 @@ void colorChange_task(void * pvParameters){
              setColor = green;
         else
              setColor = red; 
-
-        xTaskNotify(LED_TaskHandle, (setColor << 1),eSetBits); //Send Color bit to bit 2 of LED tasks, notification value
+        xTaskNotify(LED_TaskHandle, (setColor << 1),eSetValueWithOverwrite); //Send Color bit to bit 2 of LED tasks, notification value
+        printf("Reading done, see LED color for information\n");
     }
     
 }

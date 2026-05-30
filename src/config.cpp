@@ -24,6 +24,15 @@ Function to configure GPIO ports and the ADC
   gpio_set_direction(greenLED_GPIO, GPIO_MODE_OUTPUT);
   gpio_output_enable(greenLED_GPIO);
   gpio_set_level(greenLED_GPIO, 0);
+  //yellow LED
+  gpio_pad_select_gpio(yellowLED_pin); 
+  gpio_set_direction(yellowLED_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(yellowLED_GPIO);
+  gpio_set_level(yellowLED_GPIO, 0);
+  //User input
+  gpio_pad_select_gpio(userInput_pin); 
+  gpio_set_direction(userInput_GPIO, GPIO_MODE_INPUT);
+  gpio_input_enable(userInput_GPIO);
 }
 
  

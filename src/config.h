@@ -25,8 +25,8 @@
 #define INPUT                0x01
 #define OUTPUT               0x02
 //pins
-#define bulitInLED_pin       2
-#define yellowLED_pin        23
+#define redLED_pin           2
+#define greenLED_pin         23
 #define signalInput_pin      36
 //timer
 #define hw_divider           2
@@ -38,8 +38,8 @@
 #define timer2_divider 12000  // for 15 seconds, timer value should equal 100000
 
 
-#define bulitInLED_GPIO      GPIO_NUM_2
-#define yellowLED_GPIO       GPIO_NUM_23
+#define redLED_GPIO      GPIO_NUM_2
+#define greenLED_GPIO       GPIO_NUM_23
 #define signalInput_GPIO     GPIO_NUM_36
 #define signalInput_channel  ADC1_CHANNEL_0
 

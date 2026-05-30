@@ -14,16 +14,16 @@ Function to configure GPIO ports and the ADC
   gpio_pad_select_gpio(signalInput_pin);  
   gpio_set_direction(signalInput_GPIO, GPIO_MODE_INPUT);
   gpio_input_enable(signalInput_GPIO);
-  //yellow LED
-  gpio_pad_select_gpio(yellowLED_pin);  
-  gpio_set_direction(yellowLED_GPIO, GPIO_MODE_OUTPUT);
-  gpio_output_enable(yellowLED_GPIO);
-  gpio_set_level(yellowLED_GPIO, 0);    
-  //built in LED
-  gpio_pad_select_gpio(bulitInLED_pin); 
-  gpio_set_direction(bulitInLED_GPIO, GPIO_MODE_OUTPUT);
-  gpio_output_enable(bulitInLED_GPIO);
-  gpio_set_level(bulitInLED_GPIO, 0);
+  //Red LED
+  gpio_pad_select_gpio(redLED_pin);  
+  gpio_set_direction(redLED_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(redLED_GPIO);
+  gpio_set_level(redLED_GPIO, 0);    
+  //Green LED
+  gpio_pad_select_gpio(greenLED_pin); 
+  gpio_set_direction(greenLED_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(greenLED_GPIO);
+  gpio_set_level(greenLED_GPIO, 0);
 }
 
  

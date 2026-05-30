@@ -12,10 +12,10 @@ void test_task ( void * pvParameters ){
   for(;;){
     gpio_set_level(GPIO_NUM_23, 1);
      vTaskDelay(pdMS_TO_TICKS(500));
-     printf("LED should be on/n");
+     //printf("High\n");
      gpio_set_level(GPIO_NUM_23, 0);
     vTaskDelay(pdMS_TO_TICKS(500));
-    printf("LED should be off/n");
+    //printf("Low\n");
   }
 }
 
@@ -28,20 +28,22 @@ extern "C" {
       printf("sample queue is NULL\n");
     }
 
-    //configPins();
-   // configTimer();
-    xTaskCreatePinnedToCore(test_task,"test", 1000, NULL, 1, NULL, 1);
-    //xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
+    configPins();
+    configTimer();
+    xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
     //xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 0 );
     //xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 4, NULL, 0 );
-   // xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 3, NULL, 0 );
-   // xTaskCreatePinnedToCore(LED_task,"LED", 1000, NULL, 2, &LED_TaskHandle, 1);
-    for(;;){
-      vTaskDelay(20000);
+    xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 3, NULL, 0 );
+    xTaskCreatePinnedToCore(LED_task,"LED", 2000, NULL, 2, &LED_TaskHandle, 1);
+
+    while (1) {
+        // Yield to let other FreeRTOS tasks run
+        vTaskDelay(pdMS_TO_TICKS(1000)); 
     }
-    
+  
   }
-  }
+}
 
 
 

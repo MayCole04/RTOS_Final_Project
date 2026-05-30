@@ -21,11 +21,12 @@ QueueHandle_t   bpm_queue;
 
 void beatMonitor_task(void * pvParameters )
 {
-    uint16_t beat_miss_count = 0;           //used if the ADC reading is below the threshhold voltage for a heartbeat
+    uint16_t beat_miss_count = 0; 
+    bool  set = false;         //used if the ADC reading is below the threshhold voltage for a heartbeat
     vTaskDelay(pdMS_TO_TICKS(500));         //freeRTOS recognizes ticks, not ms, so this converts it
     for(;;)
     {
-        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+        //ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
         uint16_t current_adc = 0;           //stores the current ADC reading, cant determine voltage reading from this
         if (sample_queue != NULL) 
             xQueueReceive(sample_queue, &current_adc, portMAX_DELAY);       //wait forever, until we get the raw ADC value
@@ -33,35 +34,39 @@ void beatMonitor_task(void * pvParameters )
             printf("Error: Queue handle is NULL!\n");
         
         float voltage = current_adc * 2.45 / 4095;  //convert raw ADC value to voltage, more readable by the user
-        if(voltage < threshhold_voltage)
+        if(voltage < threshhold_voltage){
+            set = false;
             beat_miss_count++;
-        else {
-            if(calculateBPM_TaskHandle ==NULL)
-                xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 0 );
-            xTaskNotify(LED_TaskHandle, 1, eSetBits);      //notify the LED task that we have a beat, so it can turn on the LED for a short time
-            xTaskNotifyGive(calculateBPM_TaskHandle);       //notify the BPM task that we have a new beat, so it can calculate the BPM
-            beat_miss_count = 0;
-            printf("Heartbeat Successfully Read. sample:%d voltage: %f\n", beat_miss_count+1, voltage);   
         }
+        else {
+            if(!set){
+                xTaskNotify(LED_TaskHandle, 1, eSetBits);      //notify the LED task that we have a beat, so it can turn on the LED for a short time
+                xTaskNotifyGive(calculateBPM_TaskHandle);       //notify the BPM task that we have a new beat, so it can calculate the BPM
+                beat_miss_count = 0;
+                printf("Heartbeat Successfully Read. sample:%d voltage: %f\n", beat_miss_count+1, voltage); 
+                set = true;  
+            }
 
-        if(beat_miss_count == 250)      //if we dont get a beat for .5 seconds, we debug by printing the voltage.
-            printf("Voltage: %f\n", voltage);   
-        if(beat_miss_count == 65535){
-            beat_miss_count = 0;
-            printf("Error: beat_miss_count overflow\n");
-        }   
+            if(beat_miss_count == 250)      //if we dont get a beat for .5 seconds, we debug by printing the voltage.
+                printf("Voltage: %f\n", voltage);   
+            if(beat_miss_count == 65535){
+                beat_miss_count = 0;
+                printf("Error: beat_miss_count overflow\n");
+        } 
+    }  
     }
 }
 
 
 void calculateBPM_task(void * pvParameters){
     
-    uint8_t bpm =0;
+    uint8_t bpm = 0;
     for (;;){   
-       uint32_t notification = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+       uint32_t notification = ulTaskNotifyTake(pdTRUE, 0);
        switch (notification >> 31)
        {
        case 1:{  //Measuring State
+            printf("In measure state\n");
             vTaskDelay(pdMS_TO_TICKS(measure_time*1000));          //Count for 15 seconds
             notification = ulTaskNotifyTake(pdTRUE, 0);
             timer_pause(TIMER_GROUP_0, TIMER_0);
@@ -70,18 +75,23 @@ void calculateBPM_task(void * pvParameters){
             bpm_queue = xQueueCreate(queue_size, sizeof(uint8_t));
             while(bpm_queue == NULL)
                 printf("bpm queue is NULL\n");
-            bpm = (notification & 0x000000FF);
+            bpm = (notification & 0x000000FF) * 4;
             xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 4, NULL, 0 );
+            printf("created color change task\n");
             xQueueSend(bpm_queue,&bpm, portMAX_DELAY);  
             break;
        } 
        default:{ //Idle State
             if(bpm != 0){
+                printf("In idle state\n");
+                printf("BPM: %d\n", bpm);
                 float LED_period_float = round(60/bpm * 1000);
                 uint16_t LED_period_int = (uint16_t) LED_period_float;
                 vTaskDelay(pdMS_TO_TICKS(LED_period_int));            //Match LED frequency to BPM
                 xTaskNotify(LED_TaskHandle, 1, eSetBits);
             }
+            else
+                vTaskDelay(pdMS_TO_TICKS(20)); 
             break;
        }  
        }      
@@ -96,6 +106,7 @@ void colorChange_task(void * pvParameters){
     };
     for(;;){
         xQueueReceive(bpm_queue, &bpm, portMAX_DELAY);
+        printf("color change task running\n");
         enum color setColor;
         if((bpm <= base_highBPM) && (bpm >= base_lowBPM))
              setColor = green;

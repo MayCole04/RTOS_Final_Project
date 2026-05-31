@@ -47,7 +47,7 @@ void userInput_task(void * pvParameters){
   for(;;){
     if(gpio_get_level(userInput_GPIO) == 1){
       vTaskDelay(pdMS_TO_TICKS(10));
-      if(gpio_get_level(userInput_GPIO) == 1){
+      //if(gpio_get_level(userInput_GPIO) == 1){
         printf("Starting Heartbeat readings\n");
         xTaskNotify(LED_TaskHandle, 4, eSetBits);
         if(calculateBPM_TaskHandle ==NULL){
@@ -61,7 +61,7 @@ void userInput_task(void * pvParameters){
         vTaskDelay(pdMS_TO_TICKS(3000));
         vTaskDelay(pdMS_TO_TICKS(3000));
         vTaskDelay(pdMS_TO_TICKS(3000));
-      }
+     // }
     }
     else
     vTaskDelay(pdMS_TO_TICKS(100));

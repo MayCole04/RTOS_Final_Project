@@ -32,6 +32,7 @@ Function to configure GPIO ports and the ADC
   //User input
   gpio_pad_select_gpio(userInput_pin); 
   gpio_set_direction(userInput_GPIO, GPIO_MODE_INPUT);
+   gpio_set_pull_mode(userInput_GPIO, GPIO_PULLDOWN_ONLY);
   gpio_input_enable(userInput_GPIO);
 }
 

@@ -75,7 +75,7 @@ void calculateBPM_task(void * pvParameters){
             bpm_queue = xQueueCreate(queue_size, sizeof(uint8_t));
             while(bpm_queue == NULL)
                 printf("bpm queue is NULL\n");
-            bpm = (notification & 0x000000FF) * 4;
+            bpm = (notification & 0x000000FF) << 2;
             xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 4, NULL, 0 );
             printf("created color change task\n");
             xQueueSend(bpm_queue,&bpm, portMAX_DELAY);  

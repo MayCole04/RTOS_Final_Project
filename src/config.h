@@ -25,9 +25,9 @@
 #define INPUT                0x01
 #define OUTPUT               0x02
 //pins
-#define redLED_pin           2
-#define greenLED_pin         5
-#define yellowLED_pin        21
+#define redLED_pin           0
+#define greenLED_pin         15
+#define yellowLED_pin        2
 #define userInput_pin        27
 #define signalInput_pin      36
 //timer
@@ -37,9 +37,9 @@
 #define queue_size           10
 
 
-#define redLED_GPIO         GPIO_NUM_2
-#define greenLED_GPIO       GPIO_NUM_5
-#define yellowLED_GPIO      GPIO_NUM_21
+#define redLED_GPIO         GPIO_NUM_0
+#define greenLED_GPIO       GPIO_NUM_15
+#define yellowLED_GPIO      GPIO_NUM_2
 #define userInput_GPIO      GPIO_NUM_27
 #define signalInput_GPIO    GPIO_NUM_36
 #define signalInput_channel ADC1_CHANNEL_0

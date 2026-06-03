@@ -32,7 +32,7 @@ extern "C" {
     configTimer();
     xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
     xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
-    xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 3, NULL, 0 );
+    xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 5, NULL, 1 );
     xTaskCreatePinnedToCore(LED_task,"LED", 2000, NULL, 2, &LED_TaskHandle, 1);
 
     while (1) {

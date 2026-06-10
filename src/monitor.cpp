@@ -2,14 +2,18 @@
 #include <freertos/queue.h>
 #include <cmath>
 
-/*
-; this ISR collects the raw ADC value periodically set by frequency that is user defined in config.h
-*/
+
 TaskHandle_t    beatMonitor_TaskHandle = NULL;
 TaskHandle_t    calculateBPM_TaskHandle = NULL;
 TaskHandle_t    colorChange_TaskHandle = NULL;
 QueueHandle_t   bpm_queue;
+
+
+
  bool IRAM_ATTR heartbeat_timer_callback(void *args) {
+/*
+ this ISR collects the raw ADC value periodically set by frequency that is user defined in config.h
+*/
     BaseType_t high_task_awoken = pdFALSE;                                  //Dont switch to higher priority task when interrupt starts
     uint16_t adc_raw = adc1_get_raw(signalInput_channel);                   //Get raw ADC value, this is a number between 0 and 4095, which corresponds to a voltage between 0 and 2.45V
     if (sample_queue != NULL) 
@@ -20,11 +24,22 @@ QueueHandle_t   bpm_queue;
     return high_task_awoken == pdTRUE;                                      //Switch to highest priority task after interrupt
 }
 
+
+
+
+
 void beatMonitor_task(void * pvParameters )
+/*************************************************************************************
+    This thread Monitors for heartbeat occurances.
+    It recieves the raw ADC value collected in the interrupt via a message queue.
+    It check if the value is above a certain threshold, threshhold_voltage,
+    which is the voltage that constitutes a heartbeat. If it is a 
+    heartbeat, it then udpates the calculate BPM task's notification
+    value, which is being used as a counting semaphore tracking the
+    number of heartbeats. 
+*************************************************************************************/
 {
-    uint16_t beat_miss_count = 0; 
-    bool  set = false;                                                      //used if the ADC reading is below the threshhold voltage for a heartbeat
-    vTaskDelay(pdMS_TO_TICKS(500));                                         //freeRTOS recognizes ticks, not ms, so this converts it
+    bool  set = false;                                                                                           //freeRTOS recognizes ticks, not ms, so this converts it
     for(;;){
         uint16_t current_adc = 0;                                           //stores the current ADC reading, cant determine voltage reading from this
         if (sample_queue != NULL) 
@@ -33,33 +48,37 @@ void beatMonitor_task(void * pvParameters )
             printf("Error: Queue handle is NULL!\n");
         
         float voltage = current_adc * 2.45 / 4095;                          //convert raw ADC value to voltage, more readable by the user
-        if(voltage < threshhold_voltage){
+        if(voltage < threshhold_voltage)
             set = false;
-            beat_miss_count++;
-        }
-        else {
-            if(!set){
-                xTaskNotify(LED_TaskHandle, 1, eSetBits);                   //notify the LED task that we have a beat, so it can turn on the LED for a short time
-                xTaskNotifyGive(calculateBPM_TaskHandle);                   //notify the BPM task that we have a new beat, so it can calculate the BPM
-                beat_miss_count = 0;
-                printf("Heartbeat Successfully Read. sample:%d voltage: %f\n", beat_miss_count+1, voltage); 
-                set = true;  
-            }
-
-            if(beat_miss_count == 250)      //if we dont get a beat for .5 seconds, we debug by printing the voltage.
-                printf("Voltage: %f\n", voltage);   
-            if(beat_miss_count == 65535){
-                beat_miss_count = 0;
-                printf("Error: beat_miss_count overflow\n");
-        } 
+        else if(!set){
+            xTaskNotify(LED_TaskHandle, 1, eSetBits);                   //notify the LED task that we have a beat, so it can turn on the LED for a short time
+            xTaskNotifyGive(calculateBPM_TaskHandle);                   //notify the BPM task that we have a new beat, so it can calculate the BPM
+            printf("Heartbeat Successfully Read. voltage: %f\n", voltage); 
+            set = true;  
+        }   
     }  
-    }
 }
 
 
-void calculateBPM_task(void * pvParameters){
-    //uint16_t LED_period_int = 0;
-    uint8_t bpm = 0;
+
+
+
+
+
+
+
+void calculateBPM_task(void * pvParameters)
+    /**************************************************************************
+     * This task calculates the BPM value after reading. 
+     * While BPM is being read, its notifaction value is updated which
+     * holds the number of heartbeat occur during the reading period,
+     * which is defined by measure_time. When this period is done, 
+     * it then calculates the final BPM value and sends it to the colorChange
+     * thread. It also periodically sends signals to the LED task to
+     * flash an LED at the same rate as the BPM.
+     *************************************************************************/
+{
+    uint16_t bpm = 0;
     for (;;){   
        uint32_t notification = ulTaskNotifyTake(pdTRUE, 0);
        switch (notification >> 31)
@@ -70,7 +89,7 @@ void calculateBPM_task(void * pvParameters){
             notification = ulTaskNotifyTake(pdTRUE, 0);
             timer_pause(TIMER_GROUP_0, TIMER_0);                  // stop timer which starts ADC collection
             timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);   
-            bpm_queue = xQueueCreate(queue_size, sizeof(uint8_t));
+            bpm_queue = xQueueCreate(queue_size, sizeof(uint16_t));
             while(bpm_queue == NULL)
                 printf("bpm queue is NULL\n");
             bpm = (notification & 0x000000FF) << 2;        // Multiply by 4 to get full BPM
@@ -97,8 +116,19 @@ void calculateBPM_task(void * pvParameters){
     }
 }
 
+
+
+
+
+
+
 void colorChange_task(void * pvParameters){
-    uint8_t bpm;
+    /***************************************************************************
+     * This thread decides what color the LED should flash based on the 
+     * BPM value. It recieves the BPM from the calculateBPM task and
+     * checks if healthy. If healthy, it sends green, otherwise sends red.
+     ***************************************************************************/
+    uint16_t bpm;
     enum color{
         red,
         green

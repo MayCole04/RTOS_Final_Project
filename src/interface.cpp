@@ -2,16 +2,17 @@
 
 
 TaskHandle_t LED_TaskHandle = NULL;
+
 void LED_task( void * pvParameters )
-  /*
+  /****************************************************************************************** 
     Task to control LEDs. whenever an LED need to flash, it is done by this thread.
     other threads send signals to this thread to determine when to flash and what color.
-    If notification bit 1 is set, that measn an LED needs to flashed.
-    bits 2-3 determine what color LED to flash in the following way:
+    If notification bit 0 is set, that measn an LED needs to flashed.
+    bits 1-2 determine what color LED to flash in the following way:
     00: red
     01: green
     1x: yellow 
-  */
+  *******************************************************************************************/
  {
   for( ;; )
   {
@@ -54,13 +55,14 @@ void LED_task( void * pvParameters )
 
 
 
-void userInput_task(void * pvParameters){
-  /*
+void userInput_task(void * pvParameters)
+  /**************************************************************************************** 
     Task to monitor user input. when a button is pressed,
     this thread starts the process to begin reading heartbeat.
     It send a signal the LED thread to use yellow LED, and creates the calulate BPM task.
     Finally, it will start the timer which allow heatbeat readings to start.
-  */
+  *****************************************************************************************/
+ {
   printf("Input thread running \n");
   for(;;){
     if(gpio_get_level(userInput_GPIO) == 1){         //start process to read bpm if user input recived

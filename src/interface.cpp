@@ -1,7 +1,41 @@
 #include "interface.h" 
 
+//active high hex for 7 segment displays
+uint8_t DIG_SEGS[10] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
+0x07 , 0x7F , 0x67 };
+
 
 TaskHandle_t LED_TaskHandle = NULL;
+
+uint8_t digit1 = 0;
+uint8_t digit2 = 0;
+uint8_t digit3 = 0;
+uint8_t digit4 = 0;
+
+void LED_control(uint8_t digit)
+{
+  gpio_set_level(anode_A_GPIO, (digit & 0x01));
+  gpio_set_level(anode_B_GPIO, (digit & 0x02) >> 1);
+  gpio_set_level(anode_C_GPIO, (digit & 0x04) >> 2);
+  gpio_set_level(anode_D_GPIO, (digit & 0x08) >> 3);
+  gpio_set_level(anode_E_GPIO, (digit & 0x10) >> 4);
+  gpio_set_level(anode_F_GPIO, (digit & 0x20) >> 5);
+  gpio_set_level(anode_G_GPIO, (digit & 0x40) >> 6);
+  gpio_set_level(anode_DP_GPIO, (digit & 0x80) >> 7);
+}
+
+void SevenSegmentDisplay_task(void * pvParameters)
+{
+  xMutex1 = xSemaphoreCreateMutex();
+  xMutex2 = xSemaphoreCreateMutex();
+  xMutex3 = xSemaphoreCreateMutex();
+  xMutex4 = xSemaphoreCreateMutex();
+  uint8_t digit;
+  for(;;){
+    xTaskNotifyWait(0, 0, digit, portMAX_DELAY);
+    LED_control(DIG_SEGS[digit]);
+  }
+}
 
 void LED_task( void * pvParameters )
   /****************************************************************************************** 

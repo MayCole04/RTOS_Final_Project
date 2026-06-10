@@ -8,7 +8,12 @@ TaskHandle_t    calculateBPM_TaskHandle = NULL;
 TaskHandle_t    colorChange_TaskHandle = NULL;
 QueueHandle_t   bpm_queue;
 
-
+void Convert_BPM_to_7Seg(uint16_t bpm){
+                    digit1 = DIG_SEGS[bpm % 10];
+                    digit2 = DIG_SEGS[(bpm / 10) % 10];
+                    digit3 = DIG_SEGS[(bpm / 100) % 10];
+                    digit4 = DIG_SEGS[(bpm / 1000) % 10];
+                }
 
  bool IRAM_ATTR heartbeat_timer_callback(void *args) {
 /*
@@ -61,12 +66,6 @@ void beatMonitor_task(void * pvParameters )
 
 
 
-
-
-
-
-
-
 void calculateBPM_task(void * pvParameters)
     /**************************************************************************
      * This task calculates the BPM value after reading. 
@@ -107,6 +106,12 @@ void calculateBPM_task(void * pvParameters)
                 uint16_t LED_period_int = (uint16_t) LED_period_float;
                 vTaskDelay(pdMS_TO_TICKS(LED_period_int));            //Match LED frequency to BPM
                 xTaskNotify(LED_TaskHandle, 1, eSetBits);
+                xSemaphoreTake(xMutex1, pdMS_TO_TICKS(10));
+                xSemaphoreTake(xMutex2, pdMS_TO_TICKS(10));
+                xSemaphoreTake(xMutex3, pdMS_TO_TICKS(10));
+                xSemaphoreTake(xMutex4, pdMS_TO_TICKS(10));
+
+                
             }
             else
                 vTaskDelay(pdMS_TO_TICKS(20)); 

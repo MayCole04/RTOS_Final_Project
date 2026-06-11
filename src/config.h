@@ -38,11 +38,11 @@
 #define userInput_pin        27
 #define signalInput_pin      36
 //Display Pins
-#define digit1_pin           18
-#define digit2_pin           5
+#define digit1_pin           15
+#define digit2_pin           0
 #define cathodeL_pin         16
-#define digit3_pin           0
-#define digit4_pin           15
+#define digit3_pin           5
+#define digit4_pin           18
 #define anode_D              17
 #define anode_E              4
 #define anode_DP             2
@@ -52,11 +52,11 @@
 #define anode_G              3
 #define anode_B              21
 //Display GPIO
-#define digit1_GPIO         GPIO_NUM_18
-#define digit2_GPIO         GPIO_NUM_5
+#define digit1_GPIO         GPIO_NUM_15
+#define digit2_GPIO         GPIO_NUM_0
 #define cathodeL_GPIO        GPIO_NUM_16
-#define digit3_GPIO         GPIO_NUM_0
-#define digit4_GPIO         GPIO_NUM_15
+#define digit3_GPIO         GPIO_NUM_5
+#define digit4_GPIO         GPIO_NUM_18
 #define anode_D_GPIO        GPIO_NUM_17
 #define anode_E_GPIO        GPIO_NUM_4
 #define anode_DP_GPIO        GPIO_NUM_2

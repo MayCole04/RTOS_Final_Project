@@ -34,6 +34,64 @@ Function to configure GPIO ports and the ADC
   gpio_set_direction(userInput_GPIO, GPIO_MODE_INPUT);
    gpio_set_pull_mode(userInput_GPIO, GPIO_PULLDOWN_ONLY);
   gpio_input_enable(userInput_GPIO);
+  
+  //Seven Segment 
+  gpio_pad_select_gpio(digit1_pin);  
+  gpio_set_direction(digit1_GPIO, GPIO_MODE_OUTPUT);
+  gpio_set_pull_mode(digit1_GPIO, GPIO_PULLUP_ONLY);
+  gpio_output_enable(digit1_GPIO);
+
+  gpio_pad_select_gpio(digit2_pin);  
+  gpio_set_direction(digit2_GPIO, GPIO_MODE_OUTPUT);
+  gpio_set_pull_mode(digit2_GPIO, GPIO_PULLUP_ONLY);
+  gpio_output_enable(digit2_GPIO);
+
+  gpio_pad_select_gpio(digit3_pin);  
+  gpio_set_direction(digit3_GPIO, GPIO_MODE_OUTPUT);
+  gpio_set_pull_mode(digit3_GPIO, GPIO_PULLUP_ONLY);
+  gpio_output_enable(digit3_GPIO);
+
+  gpio_pad_select_gpio(digit4_pin);  
+  gpio_set_direction(digit4_GPIO, GPIO_MODE_OUTPUT);
+  gpio_set_pull_mode(digit4_GPIO, GPIO_PULLUP_ONLY);
+  gpio_output_enable(digit4_GPIO);
+
+  gpio_pad_select_gpio(anode_A);  
+  gpio_set_direction(anode_A_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(anode_A_GPIO);
+  gpio_set_pull_mode(anode_A_GPIO, GPIO_PULLDOWN_ONLY);
+
+  gpio_pad_select_gpio(anode_B);  
+  gpio_set_direction(anode_B_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(anode_B_GPIO);
+  gpio_set_pull_mode(anode_B_GPIO, GPIO_PULLDOWN_ONLY);
+
+  gpio_pad_select_gpio(anode_C);  
+  gpio_set_direction(anode_C_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(anode_C_GPIO);
+  gpio_set_pull_mode(anode_C_GPIO, GPIO_PULLDOWN_ONLY);
+
+  gpio_pad_select_gpio(anode_D);  
+  gpio_set_direction(anode_D_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(anode_D_GPIO);
+  gpio_set_pull_mode(anode_D_GPIO, GPIO_PULLDOWN_ONLY);
+
+  gpio_pad_select_gpio(anode_E);  
+  gpio_set_direction(anode_E_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(anode_E_GPIO);
+  gpio_set_pull_mode(anode_E_GPIO, GPIO_PULLDOWN_ONLY);
+
+  gpio_pad_select_gpio(anode_F);  
+  gpio_set_direction(anode_F_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(anode_F_GPIO);
+  gpio_set_pull_mode(anode_F_GPIO, GPIO_PULLDOWN_ONLY);
+
+  gpio_pad_select_gpio(anode_G);  
+  gpio_set_direction(anode_G_GPIO, GPIO_MODE_OUTPUT);
+  gpio_output_enable(anode_G_GPIO);
+  gpio_set_pull_mode(anode_G_GPIO, GPIO_PULLDOWN_ONLY);
+
+  
 }
 
  

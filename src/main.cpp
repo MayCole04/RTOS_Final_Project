@@ -21,25 +21,24 @@ void test_task ( void * pvParameters ){
   */
 
 void test_task(void * pvParameters){
-  for(;;){
-    printf("test task is running\n");
-
-    vTaskDelay(pdMS_TO_TICKS(500));
-  
-    gpio_pad_select_gpio(digit1_pin);  
+  /*gpio_pad_select_gpio(digit1_pin);  
     gpio_set_direction(digit1_GPIO, GPIO_MODE_OUTPUT);
+     gpio_set_pull_mode(digit1_GPIO, GPIO_PULLUP_ONLY);
     gpio_output_enable(digit1_GPIO);
 
-    gpio_pad_select_gpio(anode_DP);  
-    gpio_set_direction(anode_DP_GPIO, GPIO_MODE_OUTPUT);
-    gpio_output_enable(anode_DP_GPIO);
+    gpio_pad_select_gpio(anode_A);  
+    gpio_set_direction(anode_A_GPIO, GPIO_MODE_OUTPUT);
+    gpio_output_enable(anode_A_GPIO);
+    gpio_set_pull_mode(anode_A_GPIO, GPIO_PULLDOWN_ONLY);
+    */
+    printf("test task is running\n");
+  for(;;){
+  Convert_BPM_to_7Seg(10000);
 
-    gpio_set_level(digit1_GPIO, 0);
-        gpio_set_level(anode_DP_GPIO, 1);
-         vTaskDelay(pdMS_TO_TICKS(500));
-        gpio_set_level(digit1_GPIO, 1);
+    vTaskDelay(pdMS_TO_TICKS(500));
         
-  //Convert_BPM_to_7Seg(1234);
+  Convert_BPM_to_7Seg(34);
+  vTaskDelay(pdMS_TO_TICKS(500));
   
   
   //  vTaskDelay(pdMS_TO_TICKS(500));
@@ -59,10 +58,10 @@ extern "C" {
       printf("sample queue is NULL\n");
     }
 
-    //configPins();
-    configTimer();
+    configPins();
+    //configTimer();
     xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
-    //xTaskCreatePinnedToCore(SevenSegmentDisplay_task,"7-Segment", 2000, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(SevenSegmentDisplay_task,"7-Segment", 2000, NULL, 2, NULL, 0);
     //xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
    //xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 5, NULL, 1 );
     //xTaskCreatePinnedToCore(LED_task,"LED", 2000, NULL, 2, &LED_TaskHandle, 1);

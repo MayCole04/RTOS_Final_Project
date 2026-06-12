@@ -6,8 +6,8 @@ SemaphoreHandle_t xMutex3;
 SemaphoreHandle_t xMutex4;
 
 //active high hex for 7 segment displays
-uint8_t DIG_SEGS[10] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
-0x07 , 0x7F , 0x67 };
+uint8_t DIG_SEGS[11] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
+0x07 , 0x7F , 0x67, 0x00 };
 
 
 TaskHandle_t LED_TaskHandle = NULL;
@@ -20,8 +20,14 @@ uint8_t digit4 = 0;
 void Convert_BPM_to_7Seg(uint16_t bpm){
   digit1 = DIG_SEGS[bpm % 10];
   digit2 = DIG_SEGS[(bpm / 10) % 10];
-  digit3 = DIG_SEGS[(bpm / 100) % 10];
-  digit4 = DIG_SEGS[(bpm / 1000) % 10];
+  if(bpm> 99)
+    digit3 = DIG_SEGS[(bpm / 100) % 10];
+  else
+    digit3 = DIG_SEGS[11];
+  if(bpm>1000)
+    digit4 = DIG_SEGS[(bpm / 1000) % 10];
+  else
+    digit4 = DIG_SEGS[11];
     }
 
 void LED_control(uint8_t digit)
@@ -42,40 +48,48 @@ void SevenSegmentDisplay_task(void * pvParameters)
   xMutex2 = xSemaphoreCreateMutex();
   xMutex3 = xSemaphoreCreateMutex();
   xMutex4 = xSemaphoreCreateMutex();
-  uint8_t digit;
+  gpio_set_level(digit1_GPIO, 1);
+  gpio_set_level(digit2_GPIO, 1);
+  gpio_set_level(digit3_GPIO, 1);
+  gpio_set_level(digit4_GPIO, 1);
   for(;;)
   {
-      xSemaphoreTake(xMutex1, portMAX_DELAY);   //Wait for signal to update digit 1, not hard deadline so wait indefinitely is acceptable
+     xSemaphoreTake(xMutex1, portMAX_DELAY);   //Wait for signal to update digit 1, not hard deadline so wait indefinitely is acceptable
       LED_control(digit1);
       printf("Digit 1: %d\n", digit1);
+      xSemaphoreGive(xMutex1);
       gpio_set_level(digit1_GPIO, 0);
       printf("updated digit 1\n");
-      vTaskDelay(pdMS_TO_TICKS(5));
+      vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit1_GPIO, 1);
-      xSemaphoreGive(xMutex1);
+    
+      
 
       xSemaphoreTake(xMutex2, portMAX_DELAY);
       LED_control(digit2);
-      gpio_set_level(digit2_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(5));
-      gpio_set_level(digit2_GPIO, 1);
       xSemaphoreGive(xMutex2);
+      gpio_set_level(digit2_GPIO, 0);
+      vTaskDelay(pdMS_TO_TICKS(6));
+      gpio_set_level(digit2_GPIO, 1);
+      
 
       xSemaphoreTake(xMutex3, portMAX_DELAY);
       LED_control(digit3);
+       xSemaphoreGive(xMutex3);
       gpio_set_level(digit3_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(5));
+      vTaskDelay(pdMS_TO_TICKS(6));
       gpio_set_level(digit3_GPIO, 1);
-      xSemaphoreGive(xMutex3);
+     
 
+      
       xSemaphoreTake(xMutex4, portMAX_DELAY);
       LED_control(digit4);
+      xSemaphoreGive(xMutex4);
       gpio_set_level(digit4_GPIO, 0);
       printf("updated digit 4\n");
-      vTaskDelay(pdMS_TO_TICKS(5));
+      vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit4_GPIO, 1);
-      xSemaphoreGive(xMutex4);
-
+      
   }
 }
 

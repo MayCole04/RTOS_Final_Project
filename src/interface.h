@@ -8,7 +8,7 @@ extern SemaphoreHandle_t xMutex2;
 extern SemaphoreHandle_t xMutex3;
 extern SemaphoreHandle_t xMutex4;
 
-extern uint8_t DIG_SEGS[10];
+extern uint8_t DIG_SEGS[11];
 extern uint8_t digit1;
 extern uint8_t digit2;
 extern uint8_t digit3;

@@ -60,7 +60,7 @@ extern "C" {
 
     configPins();
     //configTimer();
-    xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, &Display_TaskHandle, 0);
     xTaskCreatePinnedToCore(SevenSegmentDisplay_task,"7-Segment", 2000, NULL, 2, NULL, 0);
     //xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
    //xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 5, NULL, 1 );

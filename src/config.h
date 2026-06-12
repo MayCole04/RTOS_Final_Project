@@ -37,6 +37,7 @@
 #define yellowLED_pin        2
 #define userInput_pin        27
 #define signalInput_pin      36
+#define pot_pin              39
 //Display Pins
 #define digit1_pin           15
 #define digit2_pin           0
@@ -71,6 +72,8 @@
 #define yellowLED_GPIO      GPIO_NUM_2
 #define userInput_GPIO      GPIO_NUM_27
 #define signalInput_GPIO    GPIO_NUM_36
+#define pot_GPIO            GPIO_NUM_39
+#define pot_channel         ADC1_CHANNEL_0
 #define signalInput_channel ADC1_CHANNEL_0
 
 

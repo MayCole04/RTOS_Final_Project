@@ -100,10 +100,7 @@ void calculateBPM_task(void * pvParameters)
                 uint16_t LED_period_int = (uint16_t) LED_period_float;
                 vTaskDelay(pdMS_TO_TICKS(LED_period_int));            //Match LED frequency to BPM
                 xTaskNotify(LED_TaskHandle, 1, eSetBits);
-                xSemaphoreTake(xMutex1, pdMS_TO_TICKS(10));
-                xSemaphoreTake(xMutex2, pdMS_TO_TICKS(10));
-                xSemaphoreTake(xMutex3, pdMS_TO_TICKS(10));
-                xSemaphoreTake(xMutex4, pdMS_TO_TICKS(10));
+                Convert_BPM_to_7Seg(bpm);
 
                 
             }

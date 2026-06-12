@@ -6,11 +6,12 @@ SemaphoreHandle_t xMutex3;
 SemaphoreHandle_t xMutex4;
 
 //active high hex for 7 segment displays
-uint8_t DIG_SEGS[11] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
-0x07 , 0x7F , 0x67, 0x00 };
+uint8_t DIG_SEGS[13] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
+0x07 , 0x7F , 0x67,0x3E, 0x72, 0x00 };
 
 
 TaskHandle_t LED_TaskHandle = NULL;
+TaskHandle_t Display_TaskHandle = NULL;
 
 uint8_t digit1 = 0;
 uint8_t digit2 = 0;
@@ -18,17 +19,37 @@ uint8_t digit3 = 0;
 uint8_t digit4 = 0;
 
 void Convert_BPM_to_7Seg(uint16_t bpm){
+  if(bpm ==6600){
+
+  }
+        
+  xSemaphoreTake(xMutex1, pdMS_TO_TICKS(10));
   digit1 = DIG_SEGS[bpm % 10];
+  xSemaphoreGive(xMutex1);
+  xSemaphoreTake(xMutex2, pdMS_TO_TICKS(10));
   digit2 = DIG_SEGS[(bpm / 10) % 10];
-  if(bpm> 99)
+  xSemaphoreGive(xMutex2);
+  xSemaphoreTake(xMutex3, pdMS_TO_TICKS(10));
+  if(bpm> 99){
     digit3 = DIG_SEGS[(bpm / 100) % 10];
-  else
-    digit3 = DIG_SEGS[11];
-  if(bpm>1000)
-    digit4 = DIG_SEGS[(bpm / 1000) % 10];
-  else
-    digit4 = DIG_SEGS[11];
+    if(bpm == 6600)
+      digit3 = DIG_SEGS[10];
     }
+  else
+    digit3 = DIG_SEGS[12];
+  xSemaphoreGive(xMutex3);
+  xSemaphoreTake(xMutex4, pdMS_TO_TICKS(10));
+  if(bpm>999){
+    digit4 = DIG_SEGS[(bpm / 1000) % 10];
+    if(bpm == 6600)
+      digit4 = DIG_SEGS[11];
+    }
+  else
+    digit4 = DIG_SEGS[12];
+  xSemaphoreGive(xMutex4);
+
+}
+  
 
 void LED_control(uint8_t digit)
 {
@@ -71,7 +92,15 @@ void SevenSegmentDisplay_task(void * pvParameters)
       gpio_set_level(digit2_GPIO, 0);
       vTaskDelay(pdMS_TO_TICKS(6));
       gpio_set_level(digit2_GPIO, 1);
-      
+
+      uint32_t display_notification;
+      xTaskNotifyWait(0, 1, &display_notification, portMAX_DELAY);
+
+      if((display_notification & 0x01) ==1){
+        gpio_set_level(cathodeL_GPIO, 0);
+        vTaskDelay(pdMS_TO_TICKS(6));
+        gpio_set_level(cathodeL_GPIO, 1);
+      }
 
       xSemaphoreTake(xMutex3, portMAX_DELAY);
       LED_control(digit3);
@@ -154,7 +183,43 @@ void userInput_task(void * pvParameters)
   *****************************************************************************************/
  {
   printf("Input thread running \n");
+    uint16_t current_pot = 0;
   for(;;){
+    uint16_t new_pot = adc1_get_raw(pot_channel); 
+    if(current_pot != new_pot){
+      xTaskNotify(Display_TaskHandle, 1, eSetValueWithOverwrite);
+      current_pot = new_pot;
+      if(current_pot <684 ){
+        Convert_BPM_to_7Seg(1825);
+
+      }
+      else if((current_pot> 683) && (current_pot < 1366)){
+         Convert_BPM_to_7Seg(2635);
+
+
+      }
+      else if((current_pot > 1365) && (current_pot < 2049)){
+         Convert_BPM_to_7Seg(3645);
+
+      }
+      else if((current_pot > 2048) && (current_pot < 2731)){
+         Convert_BPM_to_7Seg(4655);
+
+
+      }
+      else if((current_pot > 2730) &&(current_pot < 3414)){
+         Convert_BPM_to_7Seg(5665);
+
+      }
+      else{
+         Convert_BPM_to_7Seg(66);
+         xTaskNotify(Display_TaskHandle, 0, eSetValueWithOverwrite);
+
+      }
+      xTaskNotify(Display_TaskHandle, 0, eSetValueWithOverwrite);
+  
+    }
+    
     if(gpio_get_level(userInput_GPIO) == 1){         //start process to read bpm if user input recived
         printf("Starting Heartbeat readings\n");
         if(calculateBPM_TaskHandle ==NULL){          // start running calculate task
@@ -170,3 +235,5 @@ void userInput_task(void * pvParameters)
       vTaskDelay(pdMS_TO_TICKS(100));                  // periodically check for user input 
   }
 }
+
+

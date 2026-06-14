@@ -9,11 +9,15 @@ extern SemaphoreHandle_t xMutex2;
 extern SemaphoreHandle_t xMutex3;
 extern SemaphoreHandle_t xMutex4;
 
-extern uint8_t DIG_SEGS[11];
+extern const uint8_t DIG_SEGS[14];
+/*
 extern uint8_t digit1;
 extern uint8_t digit2;
 extern uint8_t digit3;
 extern uint8_t digit4;
+*/
+extern uint32_t digits;
+
 
 void Convert_BPM_to_7Seg(uint16_t bpm);
 

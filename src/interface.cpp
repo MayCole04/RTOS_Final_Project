@@ -1,55 +1,61 @@
 #include "interface.h" 
 
-SemaphoreHandle_t xMutex1;
-SemaphoreHandle_t xMutex2;
-SemaphoreHandle_t xMutex3;
-SemaphoreHandle_t xMutex4;
-
 //active high hex for 7 segment displays
-uint8_t DIG_SEGS[13] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
-0x07 , 0x7F , 0x67,0x3E, 0x72, 0x00 };
+const uint8_t DIG_SEGS[14] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
+0x07 , 0x7F , 0x67,0x3E, 0x73, 0x7C,  0x00 };
 
-
+SemaphoreHandle_t xMutex1;
 TaskHandle_t LED_TaskHandle = NULL;
 TaskHandle_t Display_TaskHandle = NULL;
+uint32_t digits = 0;                    //Combined variable for all 4 seven sigment digits
 
-uint8_t digit1 = 0;
-uint8_t digit2 = 0;
-uint8_t digit3 = 0;
-uint8_t digit4 = 0;
+
+
+
+
 
 void Convert_BPM_to_7Seg(uint16_t bpm){
-  if(bpm ==6600){
-
+  uint8_t digit1_temp =0;
+  uint8_t digit2_temp =0;
+  uint8_t digit3_temp =0;
+  uint8_t digit4_temp =0;
+  if(bpm == 'b'){
+    digit1_temp  =  DIG_SEGS[11];
+    digit2_temp = DIG_SEGS[12];
   }
-        
-  xSemaphoreTake(xMutex1, pdMS_TO_TICKS(10));
-  digit1 = DIG_SEGS[bpm % 10];
-  xSemaphoreGive(xMutex1);
-  xSemaphoreTake(xMutex2, pdMS_TO_TICKS(10));
-  digit2 = DIG_SEGS[(bpm / 10) % 10];
-  xSemaphoreGive(xMutex2);
-  xSemaphoreTake(xMutex3, pdMS_TO_TICKS(10));
-  if(bpm> 99){
-    digit3 = DIG_SEGS[(bpm / 100) % 10];
+  else{
+    //Digit1
     if(bpm == 6600)
-      digit3 = DIG_SEGS[10];
-    }
-  else
-    digit3 = DIG_SEGS[12];
-  xSemaphoreGive(xMutex3);
-  xSemaphoreTake(xMutex4, pdMS_TO_TICKS(10));
-  if(bpm>999){
-    digit4 = DIG_SEGS[(bpm / 1000) % 10];
+      digit1_temp =  DIG_SEGS[11];
+    else
+      digit1_temp = DIG_SEGS[bpm % 10];
+    //Digit 2
     if(bpm == 6600)
-      digit4 = DIG_SEGS[11];
-    }
-  else
-    digit4 = DIG_SEGS[12];
-  xSemaphoreGive(xMutex4);
+      digit2_temp = DIG_SEGS[10];
+    else
+      digit2_temp = DIG_SEGS[(bpm / 10) % 10];
+    //Digit 3
+    if(bpm> 99){
+        digit3_temp = DIG_SEGS[(bpm / 100) % 10];
+      }
+    else
+      digit3_temp = DIG_SEGS[13];
+    //Digit 4
+    if(bpm>999){
+      digit4_temp = DIG_SEGS[(bpm / 1000) % 10];
+      }
+    else
+      digit4_temp = DIG_SEGS[13];
+  }
 
+  xSemaphoreTake(xMutex1, pdMS_TO_TICKS(10));
+  digits = (digit4_temp <<24) | (digit3_temp << 16) | (digit2_temp << 8) | (digit1_temp);
+  xSemaphoreGive(xMutex1);
 }
   
+
+
+
 
 void LED_control(uint8_t digit)
 {
@@ -63,64 +69,78 @@ void LED_control(uint8_t digit)
   gpio_set_level(anode_DP_GPIO, (digit & 0x80) >> 7);
 }
 
+
+
+
+
+
 void SevenSegmentDisplay_task(void * pvParameters)
 {
-  xMutex1 = xSemaphoreCreateMutex();
-  xMutex2 = xSemaphoreCreateMutex();
-  xMutex3 = xSemaphoreCreateMutex();
-  xMutex4 = xSemaphoreCreateMutex();
+  printf("Seven seg thread started\n");
+  uint32_t currentDigits;
+  #define digit1 currentDigits & 0x0FF
+  #define digit2 (currentDigits >> 8) & 0x0FF
+  #define digit3 (currentDigits >> 16) & 0x0FF
+  #define digit4 (currentDigits >> 24) & 0x0FF
+
   gpio_set_level(digit1_GPIO, 1);
   gpio_set_level(digit2_GPIO, 1);
   gpio_set_level(digit3_GPIO, 1);
   gpio_set_level(digit4_GPIO, 1);
-  for(;;)
-  {
-     xSemaphoreTake(xMutex1, portMAX_DELAY);   //Wait for signal to update digit 1, not hard deadline so wait indefinitely is acceptable
+  gpio_set_level(cathodeL_GPIO, 1);
+  vTaskDelay(pdMS_TO_TICKS(15));
+
+  for(;;){
+    xSemaphoreTake(xMutex1, portMAX_DELAY); //Wait for signal to update digit 1, not hard deadline so wait indefinitely is acceptable
+    currentDigits = digits;   
+    xSemaphoreGive(xMutex1);
+    
+      //Digit 1
       LED_control(digit1);
-      printf("Digit 1: %d\n", digit1);
-      xSemaphoreGive(xMutex1);
       gpio_set_level(digit1_GPIO, 0);
       printf("updated digit 1\n");
       vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit1_GPIO, 1);
     
-      
-
-      xSemaphoreTake(xMutex2, portMAX_DELAY);
+      //Digit 2
       LED_control(digit2);
-      xSemaphoreGive(xMutex2);
       gpio_set_level(digit2_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(6));
+      vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit2_GPIO, 1);
 
-      uint32_t display_notification;
-      xTaskNotifyWait(0, 1, &display_notification, portMAX_DELAY);
-
-      if((display_notification & 0x01) ==1){
+      //Colon
+      if((digit4) != 0){
+        printf("shlould show colon!\n");
+        gpio_set_level(anode_A_GPIO, 1);
+        gpio_set_level(anode_B_GPIO, 1);
+        gpio_set_level(anode_C_GPIO, 0);
         gpio_set_level(cathodeL_GPIO, 0);
-        vTaskDelay(pdMS_TO_TICKS(6));
+        vTaskDelay(pdMS_TO_TICKS(3));
         gpio_set_level(cathodeL_GPIO, 1);
       }
-
-      xSemaphoreTake(xMutex3, portMAX_DELAY);
-      LED_control(digit3);
-       xSemaphoreGive(xMutex3);
-      gpio_set_level(digit3_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(6));
-      gpio_set_level(digit3_GPIO, 1);
-     
-
-      
-      xSemaphoreTake(xMutex4, portMAX_DELAY);
+      //Digit 4
       LED_control(digit4);
-      xSemaphoreGive(xMutex4);
       gpio_set_level(digit4_GPIO, 0);
       printf("updated digit 4\n");
       vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit4_GPIO, 1);
-      
+
+      //Digit3
+      LED_control((currentDigits >> 16) & 0x0FF);
+      gpio_set_level(digit3_GPIO, 0);
+      vTaskDelay(pdMS_TO_TICKS(3));
+      gpio_set_level(digit3_GPIO, 1);
+     
+    #undef digit1
+    #undef digit2
+    #undef digit3
+    #undef digit4
   }
 }
+
+
+
+
 
 void LED_task( void * pvParameters )
   /****************************************************************************************** 
@@ -189,7 +209,7 @@ void userInput_task(void * pvParameters)
     if(current_pot != new_pot){
       xTaskNotify(Display_TaskHandle, 1, eSetValueWithOverwrite);
       current_pot = new_pot;
-      if(current_pot <684 ){
+      if(current_pot < 684 ){
         Convert_BPM_to_7Seg(1825);
 
       }
@@ -212,7 +232,7 @@ void userInput_task(void * pvParameters)
 
       }
       else{
-         Convert_BPM_to_7Seg(66);
+         Convert_BPM_to_7Seg(6600);
          xTaskNotify(Display_TaskHandle, 0, eSetValueWithOverwrite);
 
       }

@@ -52,6 +52,11 @@ Function to configure GPIO ports and the ADC
   gpio_set_pull_mode(digit2_GPIO, GPIO_PULLUP_ONLY);
   gpio_output_enable(digit2_GPIO);
 
+  gpio_pad_select_gpio(cathodeL_pin);  
+  gpio_set_direction(cathodeL_GPIO, GPIO_MODE_OUTPUT);
+  gpio_set_pull_mode(cathodeL_GPIO, GPIO_PULLUP_ONLY);
+  gpio_output_enable(cathodeL_GPIO);
+
   gpio_pad_select_gpio(digit3_pin);  
   gpio_set_direction(digit3_GPIO, GPIO_MODE_OUTPUT);
   gpio_set_pull_mode(digit3_GPIO, GPIO_PULLUP_ONLY);

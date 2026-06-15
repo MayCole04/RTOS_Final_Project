@@ -32,9 +32,9 @@
 #define ON                   0
 #define OFF                  1
 //pins
-#define redLED_pin           0
-#define greenLED_pin         15
-#define yellowLED_pin        2
+#define redLED_pin           27
+#define greenLED_pin         12
+#define yellowLED_pin        14
 #define userInput_pin        27
 #define signalInput_pin      36
 #define pot_pin              39
@@ -67,9 +67,9 @@
 #define anode_G_GPIO        GPIO_NUM_3
 #define anode_B_GPIO        GPIO_NUM_21
 
-#define redLED_GPIO         GPIO_NUM_0
-#define greenLED_GPIO       GPIO_NUM_15
-#define yellowLED_GPIO      GPIO_NUM_2
+#define redLED_GPIO         GPIO_NUM_27
+#define greenLED_GPIO       GPIO_NUM_12
+#define yellowLED_GPIO      GPIO_NUM_14
 #define userInput_GPIO      GPIO_NUM_27
 #define signalInput_GPIO    GPIO_NUM_36
 #define pot_GPIO            GPIO_NUM_39

@@ -98,14 +98,20 @@ void SevenSegmentDisplay_task(void * pvParameters)
       //Digit 1
       LED_control(digit1);
       gpio_set_level(digit1_GPIO, 0);
+       gpio_set_level(digit2_GPIO, 0);
+        gpio_set_level(digit3_GPIO, 0);
+         gpio_set_level(digit4_GPIO, 0);
       printf("updated digit 1\n");
       vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit1_GPIO, 1);
-    
+      gpio_set_level(digit2_GPIO, 1);
+      gpio_set_level(digit3_GPIO, 1);
+      gpio_set_level(digit4_GPIO, 1);
+    /*
       //Digit 2
       LED_control(digit2);
       gpio_set_level(digit2_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(3));
+      vTaskDelay(pdMS_TO_TICKS(6));
       gpio_set_level(digit2_GPIO, 1);
 
       //Colon
@@ -128,8 +134,9 @@ void SevenSegmentDisplay_task(void * pvParameters)
       //Digit3
       LED_control((currentDigits >> 16) & 0x0FF);
       gpio_set_level(digit3_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(3));
+      vTaskDelay(pdMS_TO_TICKS(6));
       gpio_set_level(digit3_GPIO, 1);
+      */
      
     #undef digit1
     #undef digit2
@@ -204,40 +211,47 @@ void userInput_task(void * pvParameters)
  {
   printf("Input thread running \n");
     uint16_t current_pot = 0;
+    bool ready = true;
   for(;;){
     uint16_t new_pot = adc1_get_raw(pot_channel); 
-    if(current_pot != new_pot){
-      xTaskNotify(Display_TaskHandle, 1, eSetValueWithOverwrite);
-      current_pot = new_pot;
-      if(current_pot < 684 ){
-        Convert_BPM_to_7Seg(1825);
+    while (gpio_get_level(userInput_GPIO) == 0){
+    
+      if(current_pot != new_pot){
+        ready = false;
+        current_pot = new_pot;
+        if(current_pot < 684 ){
+          Convert_BPM_to_7Seg(1825);
 
+        }
+        else if((current_pot> 683) && (current_pot < 1366)){
+          Convert_BPM_to_7Seg(2635);
+
+
+        }
+        else if((current_pot > 1365) && (current_pot < 2049)){
+          Convert_BPM_to_7Seg(3645);
+
+        }
+        else if((current_pot > 2048) && (current_pot < 2731)){
+          Convert_BPM_to_7Seg(4655);
+
+
+        }
+        else if((current_pot > 2730) &&(current_pot < 3414)){
+          Convert_BPM_to_7Seg(5665);
+
+        }
+        else{
+          Convert_BPM_to_7Seg(6600);
+          
+        }
+         vTaskDelay(pdMS_TO_TICKS(100));
       }
-      else if((current_pot> 683) && (current_pot < 1366)){
-         Convert_BPM_to_7Seg(2635);
-
-
-      }
-      else if((current_pot > 1365) && (current_pot < 2049)){
-         Convert_BPM_to_7Seg(3645);
-
-      }
-      else if((current_pot > 2048) && (current_pot < 2731)){
-         Convert_BPM_to_7Seg(4655);
-
-
-      }
-      else if((current_pot > 2730) &&(current_pot < 3414)){
-         Convert_BPM_to_7Seg(5665);
-
-      }
-      else{
-         Convert_BPM_to_7Seg(6600);
-         xTaskNotify(Display_TaskHandle, 0, eSetValueWithOverwrite);
-
-      }
-      xTaskNotify(Display_TaskHandle, 0, eSetValueWithOverwrite);
-  
+    }
+    
+    if(!ready){
+      ready = true;
+      continue;
     }
     
     if(gpio_get_level(userInput_GPIO) == 1){         //start process to read bpm if user input recived

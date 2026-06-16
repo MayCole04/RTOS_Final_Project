@@ -98,20 +98,23 @@ void SevenSegmentDisplay_task(void * pvParameters)
       //Digit 1
       LED_control(digit1);
       gpio_set_level(digit1_GPIO, 0);
+      /*
        gpio_set_level(digit2_GPIO, 0);
         gpio_set_level(digit3_GPIO, 0);
          gpio_set_level(digit4_GPIO, 0);
-      printf("updated digit 1\n");
+         */
       vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit1_GPIO, 1);
+      /*
       gpio_set_level(digit2_GPIO, 1);
       gpio_set_level(digit3_GPIO, 1);
       gpio_set_level(digit4_GPIO, 1);
-    /*
+      */
+    
       //Digit 2
       LED_control(digit2);
       gpio_set_level(digit2_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(6));
+      vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit2_GPIO, 1);
 
       //Colon
@@ -127,16 +130,15 @@ void SevenSegmentDisplay_task(void * pvParameters)
       //Digit 4
       LED_control(digit4);
       gpio_set_level(digit4_GPIO, 0);
-      printf("updated digit 4\n");
       vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit4_GPIO, 1);
 
       //Digit3
       LED_control((currentDigits >> 16) & 0x0FF);
       gpio_set_level(digit3_GPIO, 0);
-      vTaskDelay(pdMS_TO_TICKS(6));
+      vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit3_GPIO, 1);
-      */
+      
      
     #undef digit1
     #undef digit2

@@ -86,7 +86,7 @@ void calculateBPM_task(void * pvParameters)
             while(bpm_queue == NULL)
                 printf("bpm queue is NULL\n");
             bpm = (notification & 0x000000FF) << 2;        // Multiply by 4 to get full BPM
-            xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 5, &colorChange_TaskHandle, 0 );
+            xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 5, &colorChange_TaskHandle, 1 );
             xQueueSend(bpm_queue,&bpm, portMAX_DELAY);  
             printf("sent bpm to color change task\n");
             break;
@@ -100,7 +100,7 @@ void calculateBPM_task(void * pvParameters)
                 uint16_t LED_period_int = (uint16_t) LED_period_float;
                 vTaskDelay(pdMS_TO_TICKS(LED_period_int));            //Match LED frequency to BPM
                 xTaskNotify(LED_TaskHandle, 1, eSetBits);
-                Convert_BPM_to_7Seg(bpm);
+              
 
                 
             }
@@ -129,16 +129,63 @@ void colorChange_task(void * pvParameters){
         red,
         green
     };
+    uint8_t highBPM = base_highBPM;
+    uint8_t lowBPM = base_lowBPM;
     for(;;){
-        xQueueReceive(bpm_queue, &bpm, portMAX_DELAY);
-        printf("color change recieved bpm\n");
-        enum color setColor;
-        if((bpm <= base_highBPM) && (bpm >= base_lowBPM))
-             setColor = green;
+        uint32_t color_notification;
+        xTaskNotifyWait(0, 0, &color_notification, 10);
+        switch (color_notification & 0x0FF)
+        {
+            case 0:{
+                highBPM = base_highBPM;
+                lowBPM = base_lowBPM;
+                break;
+            }
+            case 1:{
+                highBPM = base_highBPM;
+                lowBPM = base_lowBPM;
+                break;
+            }
+            case 2:{
+                highBPM = base_highBPM;
+                lowBPM = base_lowBPM;
+                break;
+            }
+            case 3:{
+                highBPM = base_highBPM;
+                lowBPM = base_lowBPM;
+                break;
+            }
+            case 4:{
+                highBPM = base_highBPM;
+                lowBPM = base_lowBPM;
+                break;
+            }
+            case 5:{
+                highBPM = base_highBPM;
+                lowBPM = base_lowBPM;
+                break;
+            }
+        }
+
+        if(xQueueReceive(bpm_queue, &bpm, 0)){
+            printf("color change recieved bpm\n");
+            enum color setColor;
+            if((bpm <= base_highBPM) && (bpm >= base_lowBPM))
+                setColor = green;
+            else
+                setColor = red; 
+            xTaskNotify(LED_TaskHandle, (setColor << 1),eSetValueWithOverwrite); //Send Color bit to bit 2 of LED tasks, notification value
+            printf("Reading done, see LED color for information\n");
+        }
+        else if(bpm && ((color_notification & 0x0100) == 0)){
+            Convert_BPM_to_7Seg('b');
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            Convert_BPM_to_7Seg(bpm);
+             vTaskDelay(pdMS_TO_TICKS(1000));
+        }
         else
-             setColor = red; 
-        xTaskNotify(LED_TaskHandle, (setColor << 1),eSetValueWithOverwrite); //Send Color bit to bit 2 of LED tasks, notification value
-        printf("Reading done, see LED color for information\n");
+            vTaskDelay(pdMS_TO_TICKS(100)); 
     }
     
 }

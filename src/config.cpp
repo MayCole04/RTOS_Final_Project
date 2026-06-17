@@ -15,7 +15,7 @@ Function to configure GPIO ports and the ADC
   gpio_set_direction(signalInput_GPIO, GPIO_MODE_INPUT);
   gpio_input_enable(signalInput_GPIO);
 
-  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_width(ADC_WIDTH_BIT_9);
   adc1_config_channel_atten(pot_channel, ADC_ATTEN_DB_11);
   gpio_pad_select_gpio(pot_pin);  
   gpio_set_direction(pot_GPIO, GPIO_MODE_INPUT);

@@ -7,7 +7,7 @@ const uint8_t DIG_SEGS[14] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
 SemaphoreHandle_t xMutex1;
 TaskHandle_t LED_TaskHandle = NULL;
 TaskHandle_t Display_TaskHandle = NULL;
-uint32_t digits = 0;                    //Combined variable for all 4 seven sigment digits
+uint32_t digits = 0;                    //Combined variable for all 4 seven segment digits
 
 
 
@@ -73,7 +73,6 @@ void LED_control(uint8_t digit)
 
 
 
-
 void SevenSegmentDisplay_task(void * pvParameters)
 {
   printf("Seven seg thread started\n");
@@ -98,18 +97,9 @@ void SevenSegmentDisplay_task(void * pvParameters)
       //Digit 1
       LED_control(digit1);
       gpio_set_level(digit1_GPIO, 0);
-      /*
-       gpio_set_level(digit2_GPIO, 0);
-        gpio_set_level(digit3_GPIO, 0);
-         gpio_set_level(digit4_GPIO, 0);
-         */
       vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit1_GPIO, 1);
-      /*
-      gpio_set_level(digit2_GPIO, 1);
-      gpio_set_level(digit3_GPIO, 1);
-      gpio_set_level(digit4_GPIO, 1);
-      */
+      
     
       //Digit 2
       LED_control(digit2);
@@ -119,7 +109,6 @@ void SevenSegmentDisplay_task(void * pvParameters)
 
       //Colon
       if((digit4) != 0){
-        printf("shlould show colon!\n");
         gpio_set_level(anode_A_GPIO, 1);
         gpio_set_level(anode_B_GPIO, 1);
         gpio_set_level(anode_C_GPIO, 0);
@@ -134,12 +123,11 @@ void SevenSegmentDisplay_task(void * pvParameters)
       gpio_set_level(digit4_GPIO, 1);
 
       //Digit3
-      LED_control((currentDigits >> 16) & 0x0FF);
+      LED_control(digit3);
       gpio_set_level(digit3_GPIO, 0);
       vTaskDelay(pdMS_TO_TICKS(3));
       gpio_set_level(digit3_GPIO, 1);
       
-     
     #undef digit1
     #undef digit2
     #undef digit3
@@ -211,65 +199,73 @@ void userInput_task(void * pvParameters)
     Finally, it will start the timer which allow heatbeat readings to start.
   *****************************************************************************************/
  {
-  printf("Input thread running \n");
+  
     uint16_t current_pot = 0;
     bool ready = true;
+    bool release = true;
+    uint8_t ageRange = 0;
+    //Convert_BPM_to_7Seg(0);
+
   for(;;){
     uint16_t new_pot = adc1_get_raw(pot_channel); 
-    while (gpio_get_level(userInput_GPIO) == 0){
-    
+   if(gpio_get_level(userInput_GPIO) == 0){
+      bool release = true;
       if(current_pot != new_pot){
+        printf("pot value: %d \n", new_pot);
         ready = false;
+        xTaskNotify(colorChange_TaskHandle, 0x100, eSetValueWithOverwrite);
         current_pot = new_pot;
-        if(current_pot < 684 ){
+        if(current_pot < 100 ){
           Convert_BPM_to_7Seg(1825);
-
+          ageRange = 0;
         }
-        else if((current_pot> 683) && (current_pot < 1366)){
+        else if((current_pot> 100) && (current_pot < 200)){
           Convert_BPM_to_7Seg(2635);
-
-
+          ageRange = 1;
         }
-        else if((current_pot > 1365) && (current_pot < 2049)){
+        else if((current_pot > 200) && (current_pot < 300)){
           Convert_BPM_to_7Seg(3645);
-
+          ageRange = 2;
         }
-        else if((current_pot > 2048) && (current_pot < 2731)){
+        else if((current_pot > 300) && (current_pot < 400)){
           Convert_BPM_to_7Seg(4655);
-
+          ageRange = 3;
 
         }
-        else if((current_pot > 2730) &&(current_pot < 3414)){
+        else if((current_pot > 400) &&(current_pot < 500)){
           Convert_BPM_to_7Seg(5665);
-
+          ageRange = 4;
         }
         else{
           Convert_BPM_to_7Seg(6600);
-          
+          ageRange = 5;
         }
-         vTaskDelay(pdMS_TO_TICKS(100));
+         vTaskDelay(pdMS_TO_TICKS(50));
       }
     }
-    
-    if(!ready){
+    else{
+      if(!ready){
+      bool release = false;
       ready = true;
-      continue;
-    }
-    
-    if(gpio_get_level(userInput_GPIO) == 1){         //start process to read bpm if user input recived
+      xTaskNotify(colorChange_TaskHandle, ageRange, eSetValueWithOverwrite);
+      vTaskDelay(pdMS_TO_TICKS(10));
+      }
+
+      if(release){         //start process to read bpm if user input recived
         printf("Starting Heartbeat readings\n");
         if(calculateBPM_TaskHandle ==NULL){          // start running calculate task
-            xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 0 );
+            xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 1 );
             printf("created calculate task \n");
         }
         timer_start(TIMER_GROUP_0, TIMER_0);
         xTaskNotify(LED_TaskHandle, 4, eSetBits);
         xTaskNotify(calculateBPM_TaskHandle, 0x80000000, eSetBits);
         vTaskDelay(pdMS_TO_TICKS(15100));            // wait for reading to be done to start again
+      }
+      else
+        vTaskDelay(pdMS_TO_TICKS(50));                  // periodically check for user input 
     }
-    else
-      vTaskDelay(pdMS_TO_TICKS(100));                  // periodically check for user input 
-  }
+  }  
 }
 
 

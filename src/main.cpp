@@ -21,21 +21,24 @@ void test_task ( void * pvParameters ){
   */
 
 void test_task(void * pvParameters){
-  printf("test task is running\n");
+  
   for(;;){
-    Convert_BPM_to_7Seg('b');
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    Convert_BPM_to_7Seg(114);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    Convert_BPM_to_7Seg(1825);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    Convert_BPM_to_7Seg(2635);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    Convert_BPM_to_7Seg(3645);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    Convert_BPM_to_7Seg(6600);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    uint16_t adc = adc1_get_raw(pot_channel); 
+    Convert_BPM_to_7Seg(adc);
+    vTaskDelay(pdMS_TO_TICKS(50));
   }
+ /*
+  gpio_pad_select_gpio(25); 
+    gpio_set_direction(GPIO_NUM_25, GPIO_MODE_OUTPUT);
+    gpio_output_enable(GPIO_NUM_25);
+    gpio_set_level(GPIO_NUM_25, 0);
+  for(;;){
+      gpio_set_level(GPIO_NUM_25, 1);
+      vTaskDelay(pdMS_TO_TICKS(500));
+      gpio_set_level(GPIO_NUM_25, 0);
+      vTaskDelay(pdMS_TO_TICKS(500));  
+         
+  }*/
 }
 
 
@@ -49,13 +52,14 @@ extern "C" {
     }
     xMutex1 = xSemaphoreCreateMutex();
     configPins();
-    //configTimer();
+    configTimer();
+    vTaskDelay(pdMS_TO_TICKS(5)); 
     xTaskCreatePinnedToCore(SevenSegmentDisplay_task,"7-Segment", 2000, NULL, 2, &Display_TaskHandle, 0);
     xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
     
     //xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
-   //xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 5, NULL, 1 );
-    //xTaskCreatePinnedToCore(LED_task,"LED", 2000, NULL, 2, &LED_TaskHandle, 1);
+    //xTaskCreatePinnedToCore(userInput_task, "userInput", 3000, NULL, 5, NULL, 1 );
+   // xTaskCreatePinnedToCore(LED_task,"LED", 2000, NULL, 2, &LED_TaskHandle, 0);
 
     while (1) {
         // Yield to let other FreeRTOS tasks run

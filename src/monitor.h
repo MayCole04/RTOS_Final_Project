@@ -8,10 +8,11 @@
 
 #define threshhold_voltage 1
 #define measure_time 15
-#define base_lowBPM 55
-#define base_highBPM 85
+#define base_lowBPM 60
+#define base_highBPM 79
 
 extern TaskHandle_t calculateBPM_TaskHandle;
+extern TaskHandle_t colorChange_TaskHandle;
 bool IRAM_ATTR heartbeat_timer_callback(void *args);
 //void signalInput_task(void * pvParameters);             //
 void beatMonitor_task(void * pvParameters );            

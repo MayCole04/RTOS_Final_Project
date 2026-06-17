@@ -3,6 +3,7 @@ extern TaskHandle_t LED_TaskHandle;
 extern TaskHandle_t beatMonitor_TaskHandle;
 extern TaskHandle_t calculateBPM_TaskHandle;
 extern TaskHandle_t Display_TaskHandle;
+extern TaskHandle_t colorChange_TaskHandle;
 
 extern SemaphoreHandle_t xMutex1;
 extern SemaphoreHandle_t xMutex2;

@@ -71,6 +71,7 @@ void userInput_task(void * pvParameters)
             xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 0 );
             printf("created calculate task \n");
         }
+        vTaskDelay(pdMS_TO_TICKS(4000)); 
         timer_start(TIMER_GROUP_0, TIMER_0);
         xTaskNotify(LED_TaskHandle, 4, eSetBits);
         xTaskNotify(calculateBPM_TaskHandle, 0x80000000, eSetBits);

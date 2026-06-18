@@ -4,7 +4,7 @@
 
 
 
-void test_task ( void * pvParameters ){
+/*void test_task ( void * pvParameters ){
   gpio_pad_select_gpio(23); 
   gpio_set_direction(GPIO_NUM_23, GPIO_MODE_OUTPUT);
   gpio_output_enable(GPIO_NUM_23);
@@ -17,7 +17,7 @@ void test_task ( void * pvParameters ){
     vTaskDelay(pdMS_TO_TICKS(500));
     //printf("Low\n");
   }
-}
+} */
 
 
 
@@ -30,7 +30,7 @@ extern "C" {
 
     configPins();
     configTimer();
-    xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
+    //xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
     xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
     xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 5, NULL, 1 );
     xTaskCreatePinnedToCore(LED_task,"LED", 2000, NULL, 2, &LED_TaskHandle, 1);

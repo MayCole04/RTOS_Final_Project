@@ -6,7 +6,7 @@
 #include <freertos/queue.h>
 #include "interface.h"
 
-#define threshhold_voltage 1
+#define threshhold_voltage 1.9
 #define measure_time 15
 #define base_lowBPM 55
 #define base_highBPM 85

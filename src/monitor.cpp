@@ -48,14 +48,17 @@ void beatMonitor_task(void * pvParameters )
             printf("Error: Queue handle is NULL!\n");
         
         float voltage = current_adc * 2.45 / 4095;                          //convert raw ADC value to voltage, more readable by the user
-        if(voltage < threshhold_voltage)
-            set = false;
-        else if(!set){
+        if(voltage >= threshhold_voltage  ){
+            if (!set){
             xTaskNotify(LED_TaskHandle, 1, eSetBits);                   //notify the LED task that we have a beat, so it can turn on the LED for a short time
             xTaskNotifyGive(calculateBPM_TaskHandle);                   //notify the BPM task that we have a new beat, so it can calculate the BPM
             printf("Heartbeat Successfully Read. voltage: %f\n", voltage); 
-            set = true;  
+            set = true;
         }   
+        }
+        else if(voltage < 1.5)
+            set = false;
+        
     }  
 }
 

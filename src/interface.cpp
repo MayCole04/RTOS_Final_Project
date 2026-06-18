@@ -74,6 +74,15 @@ void LED_control(uint8_t digit)
 
 
 void SevenSegmentDisplay_task(void * pvParameters)
+/****************************************************************************************** 
+  Task to control the seven segment display. It waits for a signal that the BPM value has 
+  been updated, and then updates the display accordingly. This thread adds another layer to
+  the user interface by controlling a seven-segment display. This displays BPM information 
+  and displays user input, such as age which we didn't integrate completely. This thread
+  needs to accept signals and messages from multiple threads, such as the user
+  configuration thread and the calculate BPM thread, to update the display accordingly.
+  *******************************************************************************************/
+
 {
   printf("Seven seg thread started\n");
   uint32_t currentDigits;

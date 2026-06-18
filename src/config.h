@@ -73,7 +73,7 @@
 #define userInput_GPIO      GPIO_NUM_26
 #define signalInput_GPIO    GPIO_NUM_36
 #define pot_GPIO            GPIO_NUM_34
-#define pot_channel         ADC1_CHANNEL_0
+#define pot_channel         ADC1_CHANNEL_6
 #define signalInput_channel ADC1_CHANNEL_0
 
 
@@ -81,5 +81,6 @@ extern QueueHandle_t         sample_queue;
 extern bool IRAM_ATTR        heartbeat_timer_callback(void *args);
 
 void configPins(void);
+void configOther(void);
 void configTimer(void);
     #endif // CONFIG_H

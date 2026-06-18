@@ -14,7 +14,6 @@
 extern TaskHandle_t calculateBPM_TaskHandle;
 extern TaskHandle_t colorChange_TaskHandle;
 bool IRAM_ATTR heartbeat_timer_callback(void *args);
-//void signalInput_task(void * pvParameters);             //
 void beatMonitor_task(void * pvParameters );            
 void colorChange_task(void * pvParameters);             
 void calculateBPM_task(void * pvParameters);            

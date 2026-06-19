@@ -212,64 +212,30 @@ void userInput_task(void * pvParameters)
   *****************************************************************************************/
  {
   printf("Input thread running \n");
-    uint16_t current_pot = 0;
-    bool ready = true;
   for(;;){
-    uint16_t new_pot = adc1_get_raw(pot_channel); 
-    while (gpio_get_level(userInput_GPIO) == 0){
-    
-      if(current_pot != new_pot){
-        ready = false;
-        current_pot = new_pot;
-        if(current_pot < 684 ){
-          Convert_BPM_to_7Seg(1825);
-
-        }
-        else if((current_pot> 683) && (current_pot < 1366)){
-          Convert_BPM_to_7Seg(2635);
-
-
-        }
-        else if((current_pot > 1365) && (current_pot < 2049)){
-          Convert_BPM_to_7Seg(3645);
-
-        }
-        else if((current_pot > 2048) && (current_pot < 2731)){
-          Convert_BPM_to_7Seg(4655);
-
-
-        }
-        else if((current_pot > 2730) &&(current_pot < 3414)){
-          Convert_BPM_to_7Seg(5665);
-
-        }
-        else{
-          Convert_BPM_to_7Seg(6600);
-          
-        }
-         vTaskDelay(pdMS_TO_TICKS(100));
-      }
-    }
-    
-    if(!ready){
-      ready = true;
-      continue;
-    }
-    
     if(gpio_get_level(userInput_GPIO) == 1){         //start process to read bpm if user input recived
         printf("Starting Heartbeat readings\n");
         if(calculateBPM_TaskHandle ==NULL){          // start running calculate task
             xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 0 );
             printf("created calculate task \n");
         }
+        xTaskNotify(calculateBPM_TaskHandle, 1<<30, eSetBits);
+        Convert_BPM_to_7Seg(4);
+        vTaskDelay(pdMS_TO_TICKS(1000)); 
+        Convert_BPM_to_7Seg(3);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        Convert_BPM_to_7Seg(2);
+        vTaskDelay(pdMS_TO_TICKS(1000)); 
+        Convert_BPM_to_7Seg(1);
+        vTaskDelay(pdMS_TO_TICKS(1000));  
+        Convert_BPM_to_7Seg(0);
         timer_start(TIMER_GROUP_0, TIMER_0);
+        
         xTaskNotify(LED_TaskHandle, 4, eSetBits);
-        xTaskNotify(calculateBPM_TaskHandle, 0x80000000, eSetBits);
+        xTaskNotify(calculateBPM_TaskHandle, 0x80000000, eSetValueWithOverwrite);
         vTaskDelay(pdMS_TO_TICKS(15100));            // wait for reading to be done to start again
     }
     else
       vTaskDelay(pdMS_TO_TICKS(100));                  // periodically check for user input 
   }
 }
-
-

@@ -73,7 +73,8 @@ void calculateBPM_task(void * pvParameters)
 {
     uint16_t bpm = 0;
     for (;;){   
-       uint32_t notification = ulTaskNotifyTake(pdTRUE, 0);
+       uint32_t notification ;
+       xTaskNotifyWait(0, 0xFFFF, &notification, 0);
        switch (notification >> 31)
        {
        case 1:{  //Measuring State
@@ -93,7 +94,7 @@ void calculateBPM_task(void * pvParameters)
        } 
 
        default:{ //Idle State
-            if(bpm != 0){
+            if(bpm != 0 && ((notification>>30) == 0)){
                 printf("In idle state\n");
                 printf("BPM: %d\n", bpm);
                 float LED_period_float = round(60.0/bpm * 1000);
@@ -139,6 +140,7 @@ void colorChange_task(void * pvParameters){
              setColor = red; 
         xTaskNotify(LED_TaskHandle, (setColor << 1),eSetValueWithOverwrite); //Send Color bit to bit 2 of LED tasks, notification value
         printf("Reading done, see LED color for information\n");
-    }
+        uint32_t notification;
+         xTaskNotifyWait(0, 1, &notification, portMAX_DELAY);      
     
 }

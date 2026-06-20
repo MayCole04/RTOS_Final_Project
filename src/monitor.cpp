@@ -86,12 +86,12 @@ void calculateBPM_task(void * pvParameters)
             notification = ulTaskNotifyTake(pdTRUE, 0);
             timer_pause(TIMER_GROUP_0, TIMER_0);                  // stop timer which starts ADC collection
             timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);   
-            bpm_queue = xQueueCreate(queue_size, sizeof(uint16_t));
+            
             while(bpm_queue == NULL)
                 printf("bpm queue is NULL\n");
             bpm = (notification & 0x000000FF) << 2;        // Multiply by 4 to get full BPM
-            xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 5, &colorChange_TaskHandle, 0 );
-            xQueueSend(bpm_queue,&bpm, portMAX_DELAY);  
+            xQueueSend(bpm_queue,&bpm, portMAX_DELAY);
+             
             printf("sent bpm to color change task\n");
             break;
        } 
@@ -104,7 +104,7 @@ void calculateBPM_task(void * pvParameters)
                 uint16_t LED_period_int = (uint16_t) LED_period_float;
                 vTaskDelay(pdMS_TO_TICKS(LED_period_int));            //Match LED frequency to BPM
                 xTaskNotify(LED_TaskHandle, 1, eSetBits);
-                Convert_BPM_to_7Seg(bpm);
+                
 
                 
             }
@@ -144,6 +144,21 @@ void colorChange_task(void * pvParameters){
         xTaskNotify(LED_TaskHandle, (setColor << 1),eSetValueWithOverwrite); //Send Color bit to bit 2 of LED tasks, notification value
         printf("Reading done, see LED color for information\n");
         uint32_t notification;
-         xTaskNotifyWait(0, 1, &notification, portMAX_DELAY);      
-    
+        xTaskNotifyWait(0, 1, &notification, 0);
+        notification = 0;
+        while (!notification)
+        {
+            xTaskNotifyWait(0, 1, &notification, 0);
+            if(notification)
+                break; 
+            Convert_BPM_to_7Seg(bpm); 
+            vTaskDelay(pdMS_TO_TICKS(1000));  
+            xTaskNotifyWait(0, 1, &notification, 0);
+            if(notification)
+                break;  
+            Convert_BPM_to_7Seg('b');   
+            vTaskDelay(pdMS_TO_TICKS(1000)); 
+            xTaskNotifyWait(0, 1, &notification, 0);
+        }
+    }
 }

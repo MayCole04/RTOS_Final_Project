@@ -219,6 +219,7 @@ void userInput_task(void * pvParameters)
             xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 0 );
             printf("created calculate task \n");
         }
+        xTaskNotify(colorChange_TaskHandle, 1, eSetBits);
         xTaskNotify(calculateBPM_TaskHandle, 1<<30, eSetBits);
         Convert_BPM_to_7Seg(4);
         vTaskDelay(pdMS_TO_TICKS(1000)); 
@@ -233,6 +234,7 @@ void userInput_task(void * pvParameters)
         
         xTaskNotify(LED_TaskHandle, 4, eSetBits);
         xTaskNotify(calculateBPM_TaskHandle, 0x80000000, eSetValueWithOverwrite);
+        
         vTaskDelay(pdMS_TO_TICKS(15100));            // wait for reading to be done to start again
     }
     else

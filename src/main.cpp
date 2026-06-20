@@ -44,6 +44,7 @@ extern "C" {
   void app_main(void){
     printf("Starting MAinnn\n");
     sample_queue = xQueueCreate(queue_size, sizeof(uint16_t)); 
+    bpm_queue = xQueueCreate(queue_size, sizeof(uint16_t));
     while(sample_queue == NULL){
       printf("sample queue is NULL\n");
     }
@@ -55,8 +56,9 @@ extern "C" {
     //xTaskCreatePinnedToCore(test_task,"test", 2000, NULL, 2, NULL, 0);
     
     xTaskCreatePinnedToCore(beatMonitor_task, "monitor", 2000, NULL, 5, &beatMonitor_TaskHandle, 1 );
-   xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 5, NULL, 1 );
+    xTaskCreatePinnedToCore(userInput_task, "userInput", 2000, NULL, 5, NULL, 1 );
     xTaskCreatePinnedToCore(LED_task,"LED", 2000, NULL, 2, &LED_TaskHandle, 1);
+    xTaskCreatePinnedToCore(colorChange_task, "color", 2000, NULL, 5, &colorChange_TaskHandle, 0 );
 
     while (1) {
         // Yield to let other FreeRTOS tasks run

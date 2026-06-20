@@ -9,7 +9,6 @@ TaskHandle_t    colorChange_TaskHandle = NULL;
 QueueHandle_t   bpm_queue;
 
 
-
  bool IRAM_ATTR heartbeat_timer_callback(void *args) {
 /*
  this ISR collects the raw ADC value periodically set by frequency that is user defined in config.h
@@ -64,12 +63,6 @@ void beatMonitor_task(void * pvParameters )
 
 
 
-
-
-
-
-
-
 void calculateBPM_task(void * pvParameters)
     /**************************************************************************
      * This task calculates the BPM value after reading. 
@@ -83,7 +76,8 @@ void calculateBPM_task(void * pvParameters)
 {
     uint16_t bpm = 0;
     for (;;){   
-       uint32_t notification = ulTaskNotifyTake(pdTRUE, 0);
+       uint32_t notification ;
+       xTaskNotifyWait(0, 0xFFFF, &notification, 0);
        switch (notification >> 31)
        {
        case 1:{  //Measuring State
@@ -103,13 +97,16 @@ void calculateBPM_task(void * pvParameters)
        } 
 
        default:{ //Idle State
-            if(bpm != 0){
+            if(bpm != 0 && ((notification>>30) == 0)){
                 printf("In idle state\n");
                 printf("BPM: %d\n", bpm);
                 float LED_period_float = round(60.0/bpm * 1000);
                 uint16_t LED_period_int = (uint16_t) LED_period_float;
                 vTaskDelay(pdMS_TO_TICKS(LED_period_int));            //Match LED frequency to BPM
                 xTaskNotify(LED_TaskHandle, 1, eSetBits);
+                Convert_BPM_to_7Seg(bpm);
+
+                
             }
             else
                 vTaskDelay(pdMS_TO_TICKS(20)); 
@@ -146,6 +143,7 @@ void colorChange_task(void * pvParameters){
              setColor = red; 
         xTaskNotify(LED_TaskHandle, (setColor << 1),eSetValueWithOverwrite); //Send Color bit to bit 2 of LED tasks, notification value
         printf("Reading done, see LED color for information\n");
-    }
+        uint32_t notification;
+         xTaskNotifyWait(0, 1, &notification, portMAX_DELAY);      
     
 }

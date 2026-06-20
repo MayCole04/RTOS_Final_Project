@@ -1,7 +1,155 @@
 #include "interface.h" 
 
+//active high hex for 7 segment displays
+const uint8_t DIG_SEGS[14] = { 0x3F, 0x06 , 0x5B , 0x4F , 0x66 , 0x6D , 0x7D ,
+0x07 , 0x7F , 0x67,0x3E, 0x73, 0x7C,  0x00 };
 
+SemaphoreHandle_t xMutex1;
 TaskHandle_t LED_TaskHandle = NULL;
+TaskHandle_t Display_TaskHandle = NULL;
+uint32_t digits = 0;                    //Combined variable for all 4 seven sigment digits
+
+
+
+
+
+
+void Convert_BPM_to_7Seg(uint16_t bpm){
+  uint8_t digit1_temp =0;
+  uint8_t digit2_temp =0;
+  uint8_t digit3_temp =0;
+  uint8_t digit4_temp =0;
+  if(bpm == 'b'){
+    digit1_temp  =  DIG_SEGS[11];
+    digit2_temp = DIG_SEGS[12];
+  }
+  else{
+    //Digit1
+    if(bpm == 6600)
+      digit1_temp =  DIG_SEGS[11];
+    else
+      digit1_temp = DIG_SEGS[bpm % 10];
+    //Digit 2
+    if(bpm == 6600)
+      digit2_temp = DIG_SEGS[10];
+    else
+      digit2_temp = DIG_SEGS[(bpm / 10) % 10];
+    //Digit 3
+    if(bpm> 99){
+        digit3_temp = DIG_SEGS[(bpm / 100) % 10];
+      }
+    else
+      digit3_temp = DIG_SEGS[13];
+    //Digit 4
+    if(bpm>999){
+      digit4_temp = DIG_SEGS[(bpm / 1000) % 10];
+      }
+    else
+      digit4_temp = DIG_SEGS[13];
+  }
+
+  xSemaphoreTake(xMutex1, pdMS_TO_TICKS(10));
+  digits = (digit4_temp <<24) | (digit3_temp << 16) | (digit2_temp << 8) | (digit1_temp);
+  xSemaphoreGive(xMutex1);
+}
+  
+
+
+
+
+void LED_control(uint8_t digit)
+{
+  gpio_set_level(anode_A_GPIO, (digit & 0x01));
+  gpio_set_level(anode_B_GPIO, (digit & 0x02) >> 1);
+  gpio_set_level(anode_C_GPIO, (digit & 0x04) >> 2);
+  gpio_set_level(anode_D_GPIO, (digit & 0x08) >> 3);
+  gpio_set_level(anode_E_GPIO, (digit & 0x10) >> 4);
+  gpio_set_level(anode_F_GPIO, (digit & 0x20) >> 5);
+  gpio_set_level(anode_G_GPIO, (digit & 0x40) >> 6);
+  gpio_set_level(anode_DP_GPIO, (digit & 0x80) >> 7);
+}
+
+
+
+
+
+
+void SevenSegmentDisplay_task(void * pvParameters)
+{
+  printf("Seven seg thread started\n");
+  uint32_t currentDigits;
+  #define digit1 currentDigits & 0x0FF
+  #define digit2 (currentDigits >> 8) & 0x0FF
+  #define digit3 (currentDigits >> 16) & 0x0FF
+  #define digit4 (currentDigits >> 24) & 0x0FF
+
+  gpio_set_level(digit1_GPIO, 1);
+  gpio_set_level(digit2_GPIO, 1);
+  gpio_set_level(digit3_GPIO, 1);
+  gpio_set_level(digit4_GPIO, 1);
+  gpio_set_level(cathodeL_GPIO, 1);
+  vTaskDelay(pdMS_TO_TICKS(15));
+
+  for(;;){
+    xSemaphoreTake(xMutex1, portMAX_DELAY); //Wait for signal to update digit 1, not hard deadline so wait indefinitely is acceptable
+    currentDigits = digits;   
+    xSemaphoreGive(xMutex1);
+    
+      //Digit 1
+      LED_control(digit1);
+      gpio_set_level(digit1_GPIO, 0);
+      /*
+       gpio_set_level(digit2_GPIO, 0);
+        gpio_set_level(digit3_GPIO, 0);
+         gpio_set_level(digit4_GPIO, 0);
+         */
+      vTaskDelay(pdMS_TO_TICKS(3));
+      gpio_set_level(digit1_GPIO, 1);
+      /*
+      gpio_set_level(digit2_GPIO, 1);
+      gpio_set_level(digit3_GPIO, 1);
+      gpio_set_level(digit4_GPIO, 1);
+      */
+    
+      //Digit 2
+      LED_control(digit2);
+      gpio_set_level(digit2_GPIO, 0);
+      vTaskDelay(pdMS_TO_TICKS(3));
+      gpio_set_level(digit2_GPIO, 1);
+
+      //Colon
+      if((digit4) != 0){
+        printf("shlould show colon!\n");
+        gpio_set_level(anode_A_GPIO, 1);
+        gpio_set_level(anode_B_GPIO, 1);
+        gpio_set_level(anode_C_GPIO, 0);
+        gpio_set_level(cathodeL_GPIO, 0);
+        vTaskDelay(pdMS_TO_TICKS(3));
+        gpio_set_level(cathodeL_GPIO, 1);
+      }
+      //Digit 4
+      LED_control(digit4);
+      gpio_set_level(digit4_GPIO, 0);
+      vTaskDelay(pdMS_TO_TICKS(3));
+      gpio_set_level(digit4_GPIO, 1);
+
+      //Digit3
+      LED_control((currentDigits >> 16) & 0x0FF);
+      gpio_set_level(digit3_GPIO, 0);
+      vTaskDelay(pdMS_TO_TICKS(3));
+      gpio_set_level(digit3_GPIO, 1);
+      
+     
+    #undef digit1
+    #undef digit2
+    #undef digit3
+    #undef digit4
+  }
+}
+
+
+
+
 
 void LED_task( void * pvParameters )
   /****************************************************************************************** 
@@ -71,9 +219,22 @@ void userInput_task(void * pvParameters)
             xTaskCreatePinnedToCore(calculateBPM_task, "BPM", 2000, NULL, 4, &calculateBPM_TaskHandle, 0 );
             printf("created calculate task \n");
         }
+        xTaskNotify(colorChange_TaskHandle, 1, eSetBits);
+        xTaskNotify(calculateBPM_TaskHandle, 1<<30, eSetBits);
+        Convert_BPM_to_7Seg(4);
+        vTaskDelay(pdMS_TO_TICKS(1000)); 
+        Convert_BPM_to_7Seg(3);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        Convert_BPM_to_7Seg(2);
+        vTaskDelay(pdMS_TO_TICKS(1000)); 
+        Convert_BPM_to_7Seg(1);
+        vTaskDelay(pdMS_TO_TICKS(1000));  
+        Convert_BPM_to_7Seg(0);
         timer_start(TIMER_GROUP_0, TIMER_0);
+        
         xTaskNotify(LED_TaskHandle, 4, eSetBits);
-        xTaskNotify(calculateBPM_TaskHandle, 0x80000000, eSetBits);
+        xTaskNotify(calculateBPM_TaskHandle, 0x80000000, eSetValueWithOverwrite);
+        
         vTaskDelay(pdMS_TO_TICKS(15100));            // wait for reading to be done to start again
     }
     else
